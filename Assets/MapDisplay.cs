@@ -12,8 +12,9 @@ public class MapDisplay : MonoBehaviour
 
     public void DrawMesh(MeshData meshData, int chunkX, int chunkY)
     {
-
-        meshCollider[chunkX , chunkY].sharedMesh = meshData.CreateMesh();
-        meshFilter[chunkX , chunkY].sharedMesh = meshData.CreateMesh();
+        Mesh mesh = meshData.CreateMesh(); // Create the mesh once
+        meshCollider[chunkX, chunkY].sharedMesh = mesh;
+        meshCollider[chunkX, chunkY].sharedMesh.RecalculateBounds();
+        meshFilter[chunkX, chunkY].sharedMesh = mesh;
     }
 }
