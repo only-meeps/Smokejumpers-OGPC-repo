@@ -422,8 +422,9 @@ public class MapGenerator : MonoBehaviour
         }
 
         //Create noiseMap
-        float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap(chunksX * chunkWidth, chunksY * chunkHeight, seed, noiseScale, octaves, persistance, lacunarity, new Vector2(0,0), noiseData.normalizeMode);
-
+        float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap(chunksX * chunkWidth, chunksY * chunkHeight, seed, noiseScale, octaves, persistance, lacunarity, new Vector2(0, 0), noiseData.normalizeMode);
+        Debug.Log("Global Noise Map value at [0,0]: " + globalNoiseMap[0, 0]);
+        Debug.Log("Global Noise Map value at [50,50]: " + (globalNoiseMap.GetLength(0) > 50 && globalNoiseMap.GetLength(1) > 50 ? globalNoiseMap[50, 50] : "Out of bounds"));
 
         ////Flatten terrain around structures such as towns
         //for(int y = 0; y < globalNoiseMap.GetLength(1); y++)
@@ -459,10 +460,12 @@ public class MapGenerator : MonoBehaviour
                 {
                     for(int x = 0; x < chunkWidth; x++)
                     {
+                        Debug.DrawRay(new Vector3(x + (chunkX * chunkWidth), 0, y + (chunkY * chunkHeight)), Vector3.down, Color.red, Mathf.Infinity);
                         localNoiseMap[x,y] = globalNoiseMap[x + (chunkWidth * chunkX), y + (chunkHeight * chunkY)];
                     }
                 }
 
+                Debug.Log("Local Noise Map for chunk " + chunkX + ", " + chunkY + " at [0,0]: " + localNoiseMap[0, 0]);
                 MapData mapData = GenerateMapData(localNoiseMap);
 
                 if (chunks[chunkX, chunkY].GetComponent<Renderer>() == null)
@@ -481,12 +484,14 @@ public class MapGenerator : MonoBehaviour
                     chunks[chunkX, chunkY].AddComponent<MeshRenderer>();
                 }
                 display.MeshRenderer[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshRenderer>();
+                
                 if (chunks[chunkX, chunkY].GetComponent<MeshCollider>() == null)
                 {
                     chunks[chunkX, chunkY].AddComponent<MeshCollider>();
                 }
-
+                
                 display.meshCollider[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshCollider>();
+                
                 display.MeshRenderer[chunkX, chunkY].sharedMaterial = terrainMat;
 
                 display.DrawMesh(MeshGen.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, 0, true), chunkX, chunkY);
