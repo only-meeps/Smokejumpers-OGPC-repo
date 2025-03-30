@@ -28,7 +28,7 @@ public class Fire_Spread : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        map.transform.localScale = new Vector3(MapSize.width, 1, MapSize.height);
+        map.transform.localScale = new Vector3(MapSize.width / 10, 1, MapSize.height / 10);
         map.transform.position = new Vector3(0, 0, 0);
         for (int i = 0; i < rnd.Next(100, 300); i++)
         {
@@ -76,8 +76,8 @@ public class Fire_Spread : MonoBehaviour
             {
                 float houseX = 0;
                 float houseZ = 0;
-                houseX = Random.Range((-towns[i].town.width / 2) + towns[i].town.x, (towns[i].town.width / 2) + towns[i].town.x);
-                houseZ = Random.Range((-towns[i].town.height / 2) + towns[i].town.y, (towns[i].town.height / 2) + towns[i].town.y);
+                houseX = Random.Range(towns[i].town.x, towns[i].town.width + towns[i].town.x);
+                houseZ = Random.Range(towns[i].town.y, towns[i].town.height + towns[i].town.y);
                 townHouses.Add(Instantiate(buildingPrefabs[rnd.Next(0, buildingPrefabs.Count)], new Vector3(houseX, towns[i].townHeight, houseZ), Quaternion.identity));
                 trees.Add(townHouses[j]);
             }
@@ -97,7 +97,7 @@ public class Fire_Spread : MonoBehaviour
     { 
         for(int i = 0; i < fireAreas.Count; i++)
         {
-            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width - 0.0001f, fireAreas[i].height- 0.0001f));
+            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width - 0.01f, fireAreas[i].height- 0.01f));
             DrawRect(fireAreas[i], 1, Color.red);
         }
         for (int i = 0; i < towns.Count; i++)

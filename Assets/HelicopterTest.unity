@@ -580,8 +580,8 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 20
-    height: 20
+    width: 300
+    height: 300
   map: {fileID: 77800388}
   trees: []
   burningTrees: []
