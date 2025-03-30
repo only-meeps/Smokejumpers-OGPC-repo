@@ -22,7 +22,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 36d4a282ea7d8bc428b64ce3a1bca725, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 36d4a282ea7d8bc428b64ce3a1bca725, type: 3}
       propertyPath: m_LocalPosition.y
@@ -30,7 +30,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 36d4a282ea7d8bc428b64ce3a1bca725, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 36d4a282ea7d8bc428b64ce3a1bca725, type: 3}
       propertyPath: m_LocalRotation.w
@@ -111,7 +111,7 @@ MonoBehaviour:
   - {fileID: 6182484818273585430}
   - {fileID: 937273849461597382}
   - {fileID: 3412758814243409545}
-  fireCycleLoop: 347750
+  fireCycleLoop: 348293
 --- !u!1 &7824637175094252953 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5117700066308340382, guid: 36d4a282ea7d8bc428b64ce3a1bca725, type: 3}

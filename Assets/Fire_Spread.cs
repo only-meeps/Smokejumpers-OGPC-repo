@@ -14,10 +14,6 @@ public class Town
 public class Fire_Spread : MonoBehaviour
 {
     public GameObject treePrefab;
-    public GameObject housePrefab;
-    public Material treeNormal;
-    public Material treeFire;
-    public Rect DangerZone;
     public System.Random rnd = new System.Random();
     public Rect MapSize;
     public GameObject map;
@@ -27,13 +23,11 @@ public class Fire_Spread : MonoBehaviour
     public List<GameObject> fires = new List<GameObject>();
     public List<Town> towns = new List<Town>();
     public List<GameObject> buildingPrefabs = new List<GameObject>();
-    public int totalHouses;
+    public List<Rect> fireAreas = new List<Rect>();
     public GameObject firePrefab; 
-    public MapGenerator mapGenerator;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        DangerZone = MapSize;
         map.transform.localScale = new Vector3(MapSize.width, 1, MapSize.height);
         map.transform.position = new Vector3(0, 0, 0);
         for (int i = 0; i < rnd.Next(100, 300); i++)
@@ -43,7 +37,11 @@ public class Fire_Spread : MonoBehaviour
             treeX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
             treeZ = Random.Range(-MapSize.height / 2, MapSize.height / 2);
             trees.Add(Instantiate(treePrefab, new Vector3(treeX, 0, treeZ), Quaternion.identity));
-            trees[i].GetComponent<MeshRenderer>().material.color = Color.green;
+   
+        }
+        for (int i = 0; i < rnd.Next(1, 5); i++)
+        {
+            fireAreas.Add(new Rect(new Vector2(trees[rnd.Next(0, trees.Count)].transform.position.x, trees[rnd.Next(0, trees.Count)].transform.position.z), new Vector2(0, 0)));
         }
         int reps = rnd.Next(1, 5);
         for(int i = 0; i < reps; i++)
@@ -73,7 +71,6 @@ public class Fire_Spread : MonoBehaviour
         for (int i = 0; i < towns.Count; i++)
         {
             int houses = rnd.Next(3, 8);
-            totalHouses += houses;
             List<GameObject> townHouses = new List<GameObject>();
             for (int j = 0; j < houses; j++)
             {
@@ -88,54 +85,60 @@ public class Fire_Spread : MonoBehaviour
         }
 
     }
-
+    public void DrawRect(Rect rect, float height, Color color)
+    {
+        Debug.DrawLine(new Vector3(rect.x, height, rect.y), new Vector3(rect.width + rect.x, height, rect.y), color);
+        Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.y), new Vector3(rect.width + rect.x, height, rect.height + rect.y), color);
+        Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.height + rect.y), color);
+        Debug.DrawLine(new Vector3(rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.y), color);
+    }
     // Update is called once per frame
     void Update()
     { 
-        DangerZone.width -= 0.001f;
-        DangerZone.height -= 0.001f;
-        Debug.DrawLine(new Vector3(-DangerZone.width / 2, 1, -DangerZone.height / 2), new Vector3(-DangerZone.width / 2, 1, DangerZone.height / 2), Color.green);
-        Debug.DrawLine(new Vector3(-DangerZone.width / 2, 1, DangerZone.height / 2), new Vector3(DangerZone.width / 2, 1, DangerZone.height / 2), Color.green);
-        Debug.DrawLine(new Vector3(DangerZone.width / 2, 1, DangerZone.height / 2), new Vector3(DangerZone.width / 2, 1, -DangerZone.height / 2), Color.green);
-        Debug.DrawLine(new Vector3(DangerZone.width / 2, 1, -DangerZone.height / 2), new Vector3(-DangerZone.width / 2, 1, -DangerZone.height / 2), Color.green);
+        for(int i = 0; i < fireAreas.Count; i++)
+        {
+            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width - 0.0001f, fireAreas[i].height- 0.0001f));
+            DrawRect(fireAreas[i], 1, Color.red);
+        }
         for (int i = 0; i < towns.Count; i++)
         {
-            Debug.DrawLine(new Vector3((-towns[i].town.width / 2) + towns[i].town.x, 1, (-towns[i].town.height / 2) + towns[i].town.y), new Vector3(((-towns[i].town.width / 2) + towns[i].town.x), 1, (towns[i].town.height / 2) + towns[i].town.y), Color.yellow);
-            Debug.DrawLine(new Vector3((-towns[i].town.width / 2) + towns[i].town.x, 1, (towns[i].town.height / 2) + towns[i].town.y), new Vector3((towns[i].town.width / 2) + towns[i].town.x, 1, (towns[i].town.height / 2) + towns[i].town.y), Color.yellow);
-            Debug.DrawLine(new Vector3((towns[i].town.width / 2) + towns[i].town.x, 1, (towns[i].town.height / 2) + towns[i].town.y), new Vector3((towns[i].town.width / 2) + towns[i].town.x, 1, (-towns[i].town.height / 2) + towns[i].town.y), Color.yellow);
-            Debug.DrawLine(new Vector3((towns[i].town.width / 2) + towns[i].town.x, 1, (-towns[i].town.height / 2) + towns[i].town.y), new Vector3((-towns[i].town.width / 2) + towns[i].town.x, 1, (-towns[i].town.height / 2) + towns[i].town.y), Color.yellow);
+            DrawRect(towns[i].town, 1, Color.green);
             for(int j = 0; j < towns[i].houses.Count; j++)
             {
-                Debug.DrawLine(new Vector3(towns[i].houses[j].transform.position.x - 1, 1, towns[i].houses[j].transform.position.z - 1), new Vector3(towns[i].houses[j].transform.position.x + 1, 1, towns[i].houses[j].transform.position.z - 1), Color.red);
-                Debug.DrawLine(new Vector3(towns[i].houses[j].transform.position.x + 1, 1, towns[i].houses[j].transform.position.z - 1), new Vector3(towns[i].houses[j].transform.position.x + 1, 1, towns[i].houses[j].transform.position.z + 1), Color.red);
-                Debug.DrawLine(new Vector3(towns[i].houses[j].transform.position.x + 1, 1, towns[i].houses[j].transform.position.z + 1), new Vector3(towns[i].houses[j].transform.position.x - 1, 1, towns[i].houses[j].transform.position.z + 1), Color.red);
-                Debug.DrawLine(new Vector3(towns[i].houses[j].transform.position.x - 1, 1, towns[i].houses[j].transform.position.z + 1), new Vector3(towns[i].houses[j].transform.position.x - 1, 1, towns[i].houses[j].transform.position.z - 1), Color.red);
+                DrawRect(new Rect(new Vector2(towns[i].houses[j].transform.position.x, towns[i].houses[j].transform.position.z), new Vector2(1,1)), 1, Color.yellow);
             }
         }
         for(int i = 0; i < trees.Count; i++)
         {
-            if (!RectContains(trees[i].transform.position, DangerZone))
+            for(int f = 0; f < fireAreas.Count; f++)
             {
-                if (!burningTrees.Contains(trees[i]) && rnd.Next(0,100) == 2)
+                if (RectContains(trees[i].transform.position, fireAreas[f]))
                 {
-                    burningTrees.Add(trees[i]);
-                    fires.Add(Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + trees[i].transform.lossyScale.y / 2, trees[i].transform.position.z), Quaternion.identity));
-                    trees[i].GetComponent<MeshRenderer>().material.color = Color.red;
-                }
-                if(trees[i].GetComponent<Tree>().fireCycleLoop > 1200)
-                {
-                    for(int j = 0; j < burningTrees.Count; j++)
+                    if (!burningTrees.Contains(trees[i]) && rnd.Next(0, 100) == 2)
                     {
-                        if (trees[i] == burningTrees[j] && !burntTrees.Contains(trees[i]))
+                        burningTrees.Add(trees[i]);
+                        fires.Add(Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + trees[i].transform.lossyScale.y, trees[i].transform.position.z), Quaternion.identity));
+                    }
+                    if (trees[i].GetComponent<Tree>().fireCycleLoop > 1200)
+                    {
+                        for (int j = 0; j < burningTrees.Count; j++)
                         {
-                            burntTrees.Add(burningTrees[j]);
-                            Destroy(fires[j].gameObject);
-                            trees[i].GetComponent<MeshRenderer>().material.color = Color.black;
-                            break;
+                            if (trees[i] == burningTrees[j] && !burntTrees.Contains(trees[i]))
+                            {
+                                burntTrees.Add(burningTrees[j]);
+                                Destroy(fires[j].gameObject);
+                                for (int t = 0; t < trees[i].GetComponent<Tree>().burnableParts.Count; t++)
+                                {
+                                    trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<MeshRenderer>().sharedMaterial.color = Color.black;
+                                    
+                                }
+                                break;
+                            }
                         }
                     }
                 }
             }
+
         }
         for (int i = 0; i < burningTrees.Count; i++)
         {
