@@ -10,7 +10,7 @@ public static class MeshGen
 
 
 
-    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail, bool useFlatShading, int chunkX, int chunkY, int chunkWidth, int chunkHeight)
+    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail, bool useFlatShading)
 
     {
 
@@ -26,12 +26,13 @@ public static class MeshGen
 
         int meshSize = borderedSize; // We want the mesh to cover the full heightmap size
 
-        int meshSizeUnsimplified = borderedSize;// For calculating world space
+        int meshSizeUnsimplified = borderedSize -1;// For calculating world space
 
 
 
-        float topLeftX = 0;
-        float topLeftZ = 0; // Assuming your Z is going negative
+        float topLeftX = 0;
+
+        float topLeftZ = 0;
 
 
 
@@ -104,6 +105,8 @@ public static class MeshGen
 
 
         meshData.ProcessMesh();
+
+
 
         return meshData;
 
