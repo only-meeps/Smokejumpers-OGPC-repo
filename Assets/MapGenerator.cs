@@ -490,7 +490,7 @@ public class MapGenerator : MonoBehaviour
 
                 display.MeshRenderer[chunkX, chunkY].sharedMaterial = terrainMat;
 
-                display.DrawMesh(MeshGen.GenerateTerrainMesh(localNoiseMap, meshHeightMultiplier, meshHeightCurve, 0, true, chunkX, chunkY, chunkWidth, chunkHeight), chunkX, chunkY);
+                display.DrawMesh(MeshGen.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, 0, true, chunkX, chunkY, chunkWidth, chunkHeight), chunkX, chunkY);
                 Bounds meshBounds = display.meshFilter[chunkX, chunkY].sharedMesh.bounds;
                 Debug.Log($"Chunk [{chunkX},{chunkY}] Bounds: sizeX={meshBounds.size.x}, sizeZ={meshBounds.size.z}");
             }

@@ -123,4 +123,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   burnableParts:
   - {fileID: 5664415646267660848}
-  fireCycleLoop: 350812
+  fireCycleLoop: 335341

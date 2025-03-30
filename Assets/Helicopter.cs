@@ -157,8 +157,7 @@ public class Helicopter : MonoBehaviour
                 {
                     if (!heliCollider.touching)
                     {
-                        //physicsHeli.transform.Translate(Vector3.down * upDownMultiplier * Time.deltaTime);
-                        rb.MovePosition(new Vector3(rb.position.x,rb.position.y - upDownMultiplier * Time.deltaTime, rb.position.z));
+                        physicsHeli.transform.Translate(Vector3.down * upDownMultiplier * Time.deltaTime);
                     }
                 }
                 if (rotateR.IsPressed())
@@ -178,7 +177,7 @@ public class Helicopter : MonoBehaviour
             }
             if (up.IsPressed())
             {
-                rb.MovePosition(new Vector3(rb.position.x, rb.position.y + upDownMultiplier * Time.deltaTime, rb.position.z));
+                physicsHeli.transform.Translate(Vector3.up * upDownMultiplier * Time.deltaTime);
             }
 
 

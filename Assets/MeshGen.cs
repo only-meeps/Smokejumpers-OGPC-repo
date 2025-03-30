@@ -112,6 +112,7 @@ public static class MeshGen
 }
 
 public class MeshData
+
 {
 
     Vector3[] vertices;
