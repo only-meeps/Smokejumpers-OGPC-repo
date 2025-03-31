@@ -1,6 +1,9 @@
+using NUnit.Framework;
 using TreeEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
+using System;
 
 public class Helicopter : MonoBehaviour
 {
@@ -34,9 +37,14 @@ public class Helicopter : MonoBehaviour
     public float altitudeTarget;
     public float thrust;
     public HeliCollider heliCollider;
+    public int citizensRescued;
+    public List<GameObject> entrances = new List<GameObject>();
+    public int capacity;
+    public int maxCapacity;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        camera = GameObject.Find("Main Camera");
         startingRot = new Quaternion(0,0,0,0);
         Debug.Log("startingRot " +  startingRot);
         inputs = new HelicopterMovement();
@@ -88,6 +96,14 @@ public class Helicopter : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (heliCollider.touchingObj != null)
+        {
+            if (heliCollider.touchingObj.name == "helipad")
+            {
+                capacity = 0;
+            }
+        }
+        touching = heliCollider.touching;
         if(transform.eulerAngles.x > 180)
         {
             xAngle = (transform.eulerAngles.x - 360);
@@ -157,7 +173,6 @@ public class Helicopter : MonoBehaviour
                 {
                     if (!heliCollider.touching)
                     {
-                        //physicsHeli.transform.Translate(Vector3.down * upDownMultiplier * Time.deltaTime);
                         rb.MovePosition(new Vector3(rb.position.x,rb.position.y - upDownMultiplier * Time.deltaTime, rb.position.z));
                     }
                 }
@@ -237,21 +252,22 @@ public class Helicopter : MonoBehaviour
 
         }
 
+        float cameraDistanceFromPlayer = Vector2.Distance(new Vector2(physicsHeli.transform.position.x, physicsHeli.transform.position.z), new Vector2(camera.transform.position.x, camera.transform.position.z));
         if(physicsHeli.transform.position.x > camera.transform.position.x + 15)
         {
-            camera.transform.Translate(Vector3.right * cameraMoveSpeed * Time.deltaTime);
+            camera.transform.Translate(Vector3.right * cameraMoveSpeed * cameraDistanceFromPlayer * Time.deltaTime);
         }
         if(physicsHeli.transform.position.x < camera.transform.position.x - 15)
         {
-            camera.transform.Translate(Vector3.left * cameraMoveSpeed * Time.deltaTime);
+            camera.transform.Translate(Vector3.left * cameraMoveSpeed * cameraDistanceFromPlayer * Time.deltaTime);
         }
         if(physicsHeli.transform.position.z > camera.transform.position.z +15)
         {
-            camera.transform.Translate(Vector3.up * cameraMoveSpeed * Time.deltaTime);
+            camera.transform.Translate(Vector3.up * cameraMoveSpeed * cameraDistanceFromPlayer * Time.deltaTime);
         }
         if(physicsHeli.transform.position.z < camera.transform.position.z -15)
         {
-            camera.transform.Translate(Vector3.down * cameraMoveSpeed * Time.deltaTime);
+            camera.transform.Translate(Vector3.down * cameraMoveSpeed * cameraDistanceFromPlayer * Time.deltaTime);
         }
         camera.transform.position = new Vector3(camera.transform.position.x, physicsHeli.transform.position.y + 40, camera.transform.position.z);
         for(float x = 0; x < boxCollider.size.x; x+=raycastInterval)
