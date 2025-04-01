@@ -5,13 +5,11 @@ TagManager:
   serializedVersion: 3
   tags:
   - Terrain
-  - Door
-  - Citizen
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Terrain
+  - 
   - Water
   - UI
   - 

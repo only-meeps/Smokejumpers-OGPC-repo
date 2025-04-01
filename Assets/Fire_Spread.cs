@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using System.Collections.Generic;
-using Unity.AI.Navigation;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -8,8 +7,6 @@ public class Town
 {
     public Rect town;
     public List<GameObject> houses;
-    public Rect townPickupPoint;
-    public int townCitizenCount;
     public float townHeight;
     public float townNoiseHeight;
 }
@@ -27,21 +24,13 @@ public class Fire_Spread : MonoBehaviour
     public List<Town> towns = new List<Town>();
     public List<GameObject> buildingPrefabs = new List<GameObject>();
     public List<Rect> fireAreas = new List<Rect>();
-    public GameObject firePrefab;
-    public GameObject citizenPrefab;
-    public NavMeshSurface navMeshSurface;
-    public int citizensLeft;
-    public GameObject heliPadPrefab;
-    public GameObject helicopterPrefab;
+    public GameObject firePrefab; 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
         map.transform.localScale = new Vector3(MapSize.width / 10, 1, MapSize.height / 10);
         map.transform.position = new Vector3(0, 0, 0);
-        navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
-        GameObject helipad = Instantiate(heliPadPrefab, new Vector3(Random.Range(-MapSize.width / 2, MapSize.width / 2), -1, Random.Range(-MapSize.height / 2, MapSize.height / 2)), Quaternion.identity);
-        Instantiate(helicopterPrefab, new Vector3(helipad.transform.position.x, .85f, helipad.transform.position.z), Quaternion.identity);
-        for (int i = 0; i < rnd.Next(500, 1000); i++)
+        for (int i = 0; i < rnd.Next(100, 300); i++)
         {
             float treeX;
             float treeZ;
@@ -77,11 +66,6 @@ public class Fire_Spread : MonoBehaviour
             Debug.Log(new Rect(townX, townZ, townWidth, townLength));
             townArea = new Rect(new Vector2(townX, townZ), new Vector2(townWidth, townLength));
             town.town = townArea;
-            town.townPickupPoint.x = Random.Range(town.town.x - 15, town.town.width + town.town.x + 15);
-            town.townPickupPoint.y = Random.Range(town.town.y - 15, town.town.width + town.town.y + 15);
-            town.townPickupPoint.width = 7;
-            town.townPickupPoint.height = 7;
-            town.townCitizenCount = rnd.Next(5, 10);
             towns.Add(town);
         }
         for (int i = 0; i < towns.Count; i++)
@@ -97,13 +81,7 @@ public class Fire_Spread : MonoBehaviour
                 townHouses.Add(Instantiate(buildingPrefabs[rnd.Next(0, buildingPrefabs.Count)], new Vector3(houseX, towns[i].townHeight, houseZ), Quaternion.identity));
                 trees.Add(townHouses[j]);
             }
-            
             towns[i].houses = townHouses;
-            for(int j = 0; j < towns[i].townCitizenCount; j++)
-            {
-                GameObject citizen = Instantiate(citizenPrefab, new Vector3(Random.Range(towns[i].townPickupPoint.x - 10, towns[i].townPickupPoint.x + towns[i].townPickupPoint.width + 10), citizenPrefab.transform.lossyScale.y + 1, Random.Range(towns[i].townPickupPoint.y - 10, towns[i].townPickupPoint.y + towns[i].townPickupPoint.height + 10)), Quaternion.identity);
-                citizen.GetComponent<Citizen>().townIndex = i;
-            }
         }
 
     }
@@ -113,29 +91,19 @@ public class Fire_Spread : MonoBehaviour
         Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.y), new Vector3(rect.width + rect.x, height, rect.height + rect.y), color);
         Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.height + rect.y), color);
         Debug.DrawLine(new Vector3(rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.y), color);
-    } 
-    public void DrawRectCentered(Rect rect, float height, Color color)
-    {
-        Debug.DrawLine(new Vector3(-(rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), new Vector3((rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), color);
-        Debug.DrawLine(new Vector3((rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), new Vector3((rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), color);
-        Debug.DrawLine(new Vector3((rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), new Vector3(-(rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), color);
-        Debug.DrawLine(new Vector3(-(rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), new Vector3(-(rect.width / 2) + rect.x, height, -(rect.height / 2) +rect.y), color);
     }
     // Update is called once per frame
     void Update()
-    {
-        citizensLeft = GameObject.FindGameObjectsWithTag("Citizen").Length;
+    { 
         for(int i = 0; i < fireAreas.Count; i++)
         {
-            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width + 0.001f, fireAreas[i].height + 0.001f));
-            DrawRectCentered(fireAreas[i], 1, Color.red);
+            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width - 0.01f, fireAreas[i].height- 0.01f));
+            DrawRect(fireAreas[i], 1, Color.red);
         }
         for (int i = 0; i < towns.Count; i++)
         {
             DrawRect(towns[i].town, 1, Color.green);
-            DrawRect(towns[i].townPickupPoint, 1, Color.black);
-
-            for (int j = 0; j < towns[i].houses.Count; j++)
+            for(int j = 0; j < towns[i].houses.Count; j++)
             {
                 DrawRect(new Rect(new Vector2(towns[i].houses[j].transform.position.x, towns[i].houses[j].transform.position.z), new Vector2(1,1)), 1, Color.yellow);
             }
@@ -146,14 +114,12 @@ public class Fire_Spread : MonoBehaviour
             {
                 if (RectContains(trees[i].transform.position, fireAreas[f]))
                 {
-                    if (!burningTrees.Contains(trees[i]) && rnd.Next(0,500) == 2)
+                    if (!burningTrees.Contains(trees[i]) && rnd.Next(0, 100) == 2)
                     {
                         burningTrees.Add(trees[i]);
-                        GameObject fire = Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + transform.lossyScale.y, trees[i].transform.position.z), Quaternion.identity);
-                        fire.transform.localScale = new Vector3(2, 2, 2);
-                        fires.Add(fire);
+                        fires.Add(Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + trees[i].transform.lossyScale.y, trees[i].transform.position.z), Quaternion.identity));
                     }
-                    if (trees[i].GetComponent<Tree>().fireCycleLoop > rnd.Next(1000, 2000))
+                    if (trees[i].GetComponent<Tree>().fireCycleLoop > 1200)
                     {
                         for (int j = 0; j < burningTrees.Count; j++)
                         {
@@ -163,10 +129,8 @@ public class Fire_Spread : MonoBehaviour
                                 Destroy(fires[j].gameObject);
                                 for (int t = 0; t < trees[i].GetComponent<Tree>().burnableParts.Count; t++)
                                 {
-                                    Material mat = trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial;
-                                    mat = new Material(mat);
-                                    mat.color = Color.black;
-                                    trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial = mat;
+                                    trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<MeshRenderer>().sharedMaterial.color = Color.black;
+                                    
                                 }
                                 break;
                             }
@@ -183,10 +147,7 @@ public class Fire_Spread : MonoBehaviour
     }
     public bool RectContains(Vector3 Input, Rect Rect)
     {
-        if     ((Input.x < (Rect.width / 2) + Rect.x)
-            && (Input.x > -(Rect.width / 2) + Rect.x)
-            && (Input.z < (Rect.height / 2) + Rect.y)
-            && (Input.z > -(Rect.height / 2) + Rect.y))
+        if((Input.x < Rect.width/2) && (Input.x > -Rect.width/2) && (Input.z < Rect.height/2) && (Input.z > -Rect.height/2))
         {
             return true;
         }
