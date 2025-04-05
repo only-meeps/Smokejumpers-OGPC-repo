@@ -23,6 +23,17 @@ public class Citizen : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        for(int i = 0; i < Fire_Spread.fireAreas.Count; i++)
+        {
+            if (Fire_Spread.RectContains(transform.position, Fire_Spread.fireAreas[i]))
+            {
+                Debug.Log("A citizen died in a fire");
+                helicopter.citizensDiedInFire++;
+                Fire_Spread.towns[townIndex].townCitizenCount--;
+                Destroy(this.gameObject);
+            }
+        }
         if (helicopter.touching && Fire_Spread.towns[townIndex].townPickupPoint.Contains(new Vector2(helicopter.physicsHeli.transform.position.x, helicopter.physicsHeli.transform.position.z)) && helicopter.capacity < helicopter.maxCapacity)
         {
             
@@ -52,6 +63,7 @@ public class Citizen : MonoBehaviour
         else if(touchingHeli && !helicopter.touching)
         {
             Debug.Log("You killed a citizen!");
+            helicopter.citizensKilled++;
             Fire_Spread.towns[townIndex].townCitizenCount--;
             Destroy(this.gameObject);
         }

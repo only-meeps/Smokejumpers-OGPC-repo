@@ -12,6 +12,7 @@ public class Town
     public int townCitizenCount;
     public float townHeight;
     public float townNoiseHeight;
+    public Marker townMarker;
 }
 
 public class Fire_Spread : MonoBehaviour
@@ -30,9 +31,12 @@ public class Fire_Spread : MonoBehaviour
     public GameObject firePrefab;
     public GameObject citizenPrefab;
     public NavMeshSurface navMeshSurface;
-    public int citizensLeft;
     public GameObject heliPadPrefab;
     public GameObject helicopterPrefab;
+    public UIController UIController;
+    public Sprite townIcon;
+    public Sprite helipadIcon;
+    public Material townPickupZoneMat;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -40,20 +44,11 @@ public class Fire_Spread : MonoBehaviour
         map.transform.position = new Vector3(0, 0, 0);
         navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
         GameObject helipad = Instantiate(heliPadPrefab, new Vector3(Random.Range(-MapSize.width / 2, MapSize.width / 2), -1, Random.Range(-MapSize.height / 2, MapSize.height / 2)), Quaternion.identity);
+        Marker helipadCompassMarker = helipad.AddComponent<Marker>();
+        helipadCompassMarker.icon = helipadIcon;
+        UIController.AddMarker(helipadCompassMarker);
         Instantiate(helicopterPrefab, new Vector3(helipad.transform.position.x, .85f, helipad.transform.position.z), Quaternion.identity);
-        for (int i = 0; i < rnd.Next(500, 1000); i++)
-        {
-            float treeX;
-            float treeZ;
-            treeX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
-            treeZ = Random.Range(-MapSize.height / 2, MapSize.height / 2);
-            trees.Add(Instantiate(treePrefab, new Vector3(treeX, 0, treeZ), Quaternion.identity));
-   
-        }
-        for (int i = 0; i < rnd.Next(1, 5); i++)
-        {
-            fireAreas.Add(new Rect(new Vector2(trees[rnd.Next(0, trees.Count)].transform.position.x, trees[rnd.Next(0, trees.Count)].transform.position.z), new Vector2(0, 0)));
-        }
+        
         int reps = rnd.Next(1, 5);
         for(int i = 0; i < reps; i++)
         {
@@ -65,6 +60,11 @@ public class Fire_Spread : MonoBehaviour
             float townZ;
             townX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
             townZ = Random.Range(-MapSize.height / 2, MapSize.width / 2);
+            while (Vector2.Distance(new Vector2(townX, townZ), new Vector2(helipad.transform.position.x, helipad.transform.position.z)) < 20)
+            {
+                townX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
+                townZ = Random.Range(-MapSize.height / 2, MapSize.width / 2);
+            }
             townWidth = Random.Range(6, 20);
             townLength = Random.Range(6, 20);
             while (!RectContainsRect(new Rect(townX, townZ, townWidth, townLength) , MapSize))
@@ -82,7 +82,36 @@ public class Fire_Spread : MonoBehaviour
             town.townPickupPoint.width = 7;
             town.townPickupPoint.height = 7;
             town.townCitizenCount = rnd.Next(5, 10);
+            DrawRect(town.townPickupPoint, 1, townPickupZoneMat, .1f);
+            GameObject townOBJ = new GameObject();
+            townOBJ.name = "Town " + i;
+            townOBJ.transform.position = new Vector3(townX, 0, townZ);
+            Marker townMarker = townOBJ.AddComponent<Marker>();
+            townMarker.icon = townIcon;
+            UIController.AddMarker(townMarker);
+            town.townMarker = townMarker;
             towns.Add(town);
+        }
+        for (int i = 0; i < rnd.Next(500, 1000); i++)
+        {
+            float treeX;
+            float treeZ;
+            
+            treeX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
+            treeZ = Random.Range(-MapSize.height / 2, MapSize.height / 2);
+
+            for(int j = 0; j < towns.Count; j++)
+            {
+                if (!towns[j].town.Contains(new Vector2(treeX, treeZ)) && !towns[j].townPickupPoint.Contains(new Vector2(treeX,treeZ)))
+                {
+                    trees.Add(Instantiate(treePrefab, new Vector3(treeX, 0, treeZ), Quaternion.identity));
+                }
+            }
+
+        }
+        for (int i = 0; i < rnd.Next(1, 5); i++)
+        {
+            fireAreas.Add(new Rect(new Vector2(trees[rnd.Next(0, trees.Count)].transform.position.x, trees[rnd.Next(0, trees.Count)].transform.position.z), new Vector2(0, 0)));
         }
         for (int i = 0; i < towns.Count; i++)
         {
@@ -107,14 +136,31 @@ public class Fire_Spread : MonoBehaviour
         }
 
     }
-    public void DrawRect(Rect rect, float height, Color color)
+    public void DebugDrawRect(Rect rect, float height, Color color)
     {
         Debug.DrawLine(new Vector3(rect.x, height, rect.y), new Vector3(rect.width + rect.x, height, rect.y), color);
         Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.y), new Vector3(rect.width + rect.x, height, rect.height + rect.y), color);
         Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.height + rect.y), color);
         Debug.DrawLine(new Vector3(rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.y), color);
     } 
-    public void DrawRectCentered(Rect rect, float height, Color color)
+
+    public void DrawRect(Rect rect, float height, Material mat, float lineWidth)
+    {
+        GameObject rectOBJ = new GameObject();
+        LineRenderer lineRend = rectOBJ.AddComponent<LineRenderer>();
+
+        lineRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        lineRend.material = mat;
+        lineRend.startWidth = lineWidth;
+        lineRend.endWidth = lineWidth;
+        lineRend.positionCount = 5;
+        lineRend.SetPosition(0, new Vector3(rect.x, height, rect.y));
+        lineRend.SetPosition(1, new Vector3(rect.x + rect.width, height, rect.y));
+        lineRend.SetPosition(2, new Vector3(rect.x + rect.width, height, rect.y + rect.height));
+        lineRend.SetPosition(3, new Vector3(rect.x, height, rect.y + rect.height));
+        lineRend.SetPosition(4, new Vector3(rect.x, height, rect.y));
+    }
+    public void DebugDrawRectCentered(Rect rect, float height, Color color)
     {
         Debug.DrawLine(new Vector3(-(rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), new Vector3((rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), color);
         Debug.DrawLine(new Vector3((rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), new Vector3((rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), color);
@@ -124,20 +170,23 @@ public class Fire_Spread : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        citizensLeft = GameObject.FindGameObjectsWithTag("Citizen").Length;
+
         for(int i = 0; i < fireAreas.Count; i++)
         {
-            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width + 0.001f, fireAreas[i].height + 0.001f));
-            DrawRectCentered(fireAreas[i], 1, Color.red);
+            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width + 0.01f, fireAreas[i].height + 0.01f));
+            DebugDrawRectCentered(fireAreas[i], 1, Color.red);
         }
         for (int i = 0; i < towns.Count; i++)
         {
-            DrawRect(towns[i].town, 1, Color.green);
-            DrawRect(towns[i].townPickupPoint, 1, Color.black);
+            DebugDrawRect(towns[i].town, 1, Color.green);
 
+            if (towns[i].townCitizenCount == 0)
+            {
+                UIController.RemoveMarker(towns[i].townMarker);
+            }
             for (int j = 0; j < towns[i].houses.Count; j++)
             {
-                DrawRect(new Rect(new Vector2(towns[i].houses[j].transform.position.x, towns[i].houses[j].transform.position.z), new Vector2(1,1)), 1, Color.yellow);
+                DebugDrawRect(new Rect(new Vector2(towns[i].houses[j].transform.position.x, towns[i].houses[j].transform.position.z), new Vector2(1,1)), 1, Color.yellow);
             }
         }
         for(int i = 0; i < trees.Count; i++)

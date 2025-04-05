@@ -152,6 +152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   touching: 0
   touchingObj: {fileID: 0}
+  touchingObjName: 
 --- !u!1 &8631872565573702979
 GameObject:
   m_ObjectHideFlags: 0
@@ -292,7 +293,7 @@ MonoBehaviour:
   tiltLimiter: 13
   tiltSpeed: 50
   moveSpeedMultiplier: 2
-  rotationSpeedMultiplier: 60
+  rotationSpeedMultiplier: 120
   upDownMultiplier: 20
   physicsHeli: {fileID: 6267809139607738707}
   engineOn: 1
@@ -305,6 +306,9 @@ MonoBehaviour:
   thrust: 15
   heliCollider: {fileID: 1641284276628100912}
   citizensRescued: 0
+  citizensKilled: 0
+  citizensDiedInFire: 0
+  citizensLeft: 0
   entrances:
   - {fileID: 1363479805455814162}
   - {fileID: 8631872565573702979}

@@ -8,421 +8,52 @@ using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.XR;
 using static UnityEditor.U2D.ScriptablePacker;
+using Unity.AI.Navigation;
 
 public class MapGenerator : MonoBehaviour
 {
-    public enum DrawMode { NoiseMap, ColorMap, Mesh };
-    public DrawMode drawMode;
-    public int chunkWidth;
-    public int chunkHeight;
-    public float noiseScale;
-    public int octaves;
-    [Range(0, 1)]
-    public float persistance;
-    public float lacunarity;
-    public int seed;
-    public Vector2 offset;
-    public TerrainType[] regions;
-    public float meshHeightMultiplier;
-    public AnimationCurve meshHeightCurve;
-    public int LOD;
-    public Material treeNormal;
-    public Material treeFire;
-    public Material terrainMat;
-    public Rect DangerZone;
+    public GameObject treePrefab;
     public System.Random rnd = new System.Random();
-    public GameObject map;
-    public List<GameObject> treePrefabs = new List<GameObject>();
+    public int mapSize;
+    public int chunkSize;
     public List<GameObject> trees = new List<GameObject>();
     public List<GameObject> burningTrees = new List<GameObject>();
     public List<GameObject> burntTrees = new List<GameObject>();
     public List<GameObject> fires = new List<GameObject>();
     public List<Town> towns = new List<Town>();
     public List<GameObject> buildingPrefabs = new List<GameObject>();
-    public int totalHouses;
-    public GameObject firePrefab;
-    public TextureData textureData;
-    public NoiseData noiseData;
-    public TerrainData terrainData;
-    public int chunksX;
-    public int chunksY;
-    public GameObject[,] chunks;
-    public GameObject player;
     public List<Rect> fireAreas = new List<Rect>();
-    public Vector2 townPosEditor;
-    public Vector2 townPos;
-    public float minHeight
-    {
-        get
-        {
-            return meshHeightMultiplier * meshHeightCurve.Evaluate(0);
-        }
-    }
-    public float maxHeight
-    {
-        get
-        {
-            return meshHeightMultiplier * meshHeightCurve.Evaluate(1);
-        }
-    }
+    public GameObject[,] chunks;
+    public GameObject firePrefab;
+    public GameObject citizenPrefab;
+    public NavMeshSurface[,] navMeshSurface;
+    public GameObject heliPadPrefab;
+    public GameObject helicopterPrefab;
+    public UIController UIController;
+    public Sprite townIcon;
+    public Sprite helipadIcon;
+    public Material townPickupZoneMat;
+    public int noiseScale;
+    public int octaves;
+    public float persistance;
+    public float lacunarity;
+    public MapDisplay display;
+    public float meshHeightMultiplier;
+    public AnimationCurve meshHeightCurve;
+    public Material terrainMat;
+    public TextureData textureData;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Awake()
+    void Start()
     {
-        chunks = new GameObject[chunksX, chunksY];
-        terrainMat = new Material(terrainMat);
-        DangerZone = new Rect(new Vector2(0, 0), new Vector2(chunkWidth, chunkHeight));
-        rnd = new System.Random(noiseData.seed);
-        UnityEngine.Random.InitState(noiseData.seed);
-        CreateMap();
-    }
-    private void Start()
-    {
-    }
-    public void DrawRect(Rect rect, float height, Color color)
-    {
-        Debug.DrawLine(new Vector3(rect.x, height, rect.y), new Vector3(rect.width + rect.x, height, rect.y), color);
-        Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.y), new Vector3(rect.width + rect.x, height, rect.height + rect.y), color);
-        Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.height + rect.y), color);
-        Debug.DrawLine(new Vector3(rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.y), color);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (townPosEditor != townPos)
-        {
-            for (int i = 0; i < GameObject.FindGameObjectsWithTag("Terrain").Length; i++)
-            {
-                Destroy(GameObject.FindGameObjectsWithTag("Terrain")[i]);
-            }
-            towns = new List<Town>();
-            townPos = townPosEditor;
-            CreateMap();
-        }
-
-
-        /*
-        for(int chunkX = 0; chunkX < chunksX; chunkX++)
-        {
-            for (int chunkY = 0; chunkY < chunksX; chunkY++)
-            {
-                if (chunks[chunkX, chunkY].transform.position.x > player.transform.position.x - (chunkWidth / 2) && chunks[chunkX, chunkY].transform.position.x < player.transform.position.x + (chunkWidth / 2))
-                {
-                    if (chunks[chunkX, chunkY].transform.position.z > player.transform.position.z - (chunkHeight / 2) && chunks[chunkX, chunkY].transform.position.z < player.transform.position.z + (chunkHeight / 2))
-                    {
-                        chunks[chunkX,chunkY].SetActive(true);
-                    }
-                    else
-                    {
-                        chunks[chunkX, chunkY].SetActive(false);
-                    }
-                }
-                else
-                {
-                    chunks[chunkX, chunkY].SetActive(false);
-                }
-            }
-        }
-        */
-        /*
-        Color color = Color.white;
-        for (int chunkY = 0; chunkY < chunksY; chunkY++)
-        {
-            for (int chunkX = 0; chunkX < chunksX; chunkX++)
-            {
-                if(color == Color.white)
-                {
-                    color = Color.black;
-                }
-                else
-                {
-                    color = Color.white;
-                }
-                DrawRect(new Rect(new Vector2(chunks[chunkX, chunkY].transform.position.x, chunks[chunkX, chunkY].transform.position.z), new Vector2(chunkWidth, chunkHeight)), color);
-            }
-        }
-        */
-        for (int i = 0; i < fireAreas.Count; i++)
-        {
-            fireAreas[i] = new Rect(new Vector2(fireAreas[i].x, fireAreas[i].y), new Vector2(fireAreas[i].width + 0.001f, fireAreas[i].width + 0.001f));
-            DrawRect(fireAreas[i], 0, Color.red);
-        }
-
-
-
-        for (int i = 0; i < towns.Count; i++)
-        {
-            DrawRect(towns[i].town, towns[i].townHeight, Color.green);
-            for (int j = 0; j < towns[i].houses.Count; j++)
-            {
-                DrawRect(new Rect(new Vector2(towns[i].houses[j].transform.position.x, towns[i].houses[j].transform.position.z), new Vector2(1, 1)), towns[i].townHeight, Color.yellow);
-            }
-        }
-        for (int i = 0; i < trees.Count; i++)
-        {
-            for (int f = 0; f < fireAreas.Count; f++)
-            {
-                if (RectContains(trees[i].transform.position, fireAreas[f]))
-                {
-                    if (!burningTrees.Contains(trees[i]) && rnd.Next(0, 100) == 2)
-                    {
-                        burningTrees.Add(trees[i]);
-                        fires.Add(Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + trees[i].transform.lossyScale.y / 2, trees[i].transform.position.z), Quaternion.identity));
-                        for (int k = 0; k < trees[i].GetComponent<Tree>().burnableParts.Count; k++)
-                        {
-                            trees[i].GetComponent<Tree>().burnableParts[k].GetComponent<MeshRenderer>().sharedMaterial.color = Color.red;
-                        }
-                    }
-                    if (trees[i].GetComponent<Tree>().fireCycleLoop > 1200)
-                    {
-                        for (int j = 0; j < burningTrees.Count; j++)
-                        {
-                            if (trees[i] == burningTrees[j] && !burntTrees.Contains(trees[i]))
-                            {
-                                burntTrees.Add(burningTrees[j]);
-                                Destroy(fires[j].gameObject);
-                                for (int k = 0; k < trees[i].GetComponent<Tree>().burnableParts.Count; k++)
-                                {
-                                    trees[i].GetComponent<Tree>().burnableParts[k].GetComponent<MeshRenderer>().sharedMaterial.color = Color.black;
-                                }
-
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-        for (int i = 0; i < burningTrees.Count; i++)
-        {
-            burningTrees[i].GetComponent<Tree>().fireCycleLoop++;
-        }
-    }
-    public bool RectContains(Vector3 Input, Rect Rect)
-    {
-        if (Input.x > Rect.x && Input.x < Rect.width + Rect.x &&
-            Input.z > Rect.y && Input.z < Rect.height + Rect.y)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public void SpawnTrees(int tilePosX, int tilePosY)
-    {
-        int treesCount = rnd.Next(50, 200);
-        int[] treesX = new int[treesCount];
-        int[] treesZ = new int[treesCount];
-        for (int i = 0; i < treesCount; i++)
-        {
-            treesX[i] = rnd.Next(0, chunkWidth);
-            treesZ[i] = rnd.Next(0, chunkHeight);
-        }
-        for (int y = 0; y < chunkHeight; y++)
-        {
-            for (int x = 0; x < chunkWidth; x++)
-            {
-                for (int i = 0; i < treesCount; i++)
-                {
-                    if (x == treesX[i] && y == treesZ[i])
-                    {
-                        Vector3 potentialTreePos = new Vector3(x - (chunkWidth / 2f) + tilePosX, 20 * meshHeightMultiplier, y - (chunkHeight / 2f) + tilePosY);
-
-                        RaycastHit hit;
-                        if (Physics.Raycast(potentialTreePos, Vector3.down, out hit, Mathf.Infinity))
-                        {
-                            if (hit.collider.tag == "Terrain")
-                            {
-                                Vector3 treePos = new Vector3(hit.point.x, hit.point.y, hit.point.z);
-                                Debug.Log("Tree " + i + " is at x position " + treePos.x + ", z position " + treePos.z + " and a height of " + treePos.y);
-                                Quaternion quaternion = new Quaternion(0, 0, 0, 0);
-                                GameObject tree = Instantiate(treePrefabs[rnd.Next(0, treePrefabs.Count)], treePos, quaternion);
-                                trees.Add(tree);
-                                tree.gameObject.name = "Tree " + i;
-
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //public void CreateMap()
-    //{
-    //    MapDisplay display = FindObjectOfType<MapDisplay>();
-    //    display.textureRender = new Renderer[chunksX,chunksY];
-    //    display.meshFilter = new MeshFilter[chunksX,chunksY];
-    //    display.MeshRenderer = new MeshRenderer[chunksX,chunksY];
-    //    display.meshCollider = new MeshCollider[chunksX,chunksY];
-    //    int townsAmount = 1;
-    //    for (int i = 0; i < townsAmount; i++)
-    //    {
-    //        Town town = new Town();
-    //        Rect townArea = new Rect();
-
-
-    //        townArea.x = UnityEngine.Random.Range(0, (chunkWidth * chunksX));
-    //        townArea.y = UnityEngine.Random.Range(0, (chunkHeight * chunksY));
-    //        townArea.width = UnityEngine.Random.Range(6, 20);
-    //        townArea.height = UnityEngine.Random.Range(6, 20);
-
-    //        townArea.position = townPos;
-    //        townArea.width = 6;
-    //        townArea.height = 6;
-    //        int houses = rnd.Next(1, 5);
-    //        List<GameObject> townHouses = new List<GameObject>();
-
-
-    //        for (int j = 0; j < houses; j++)
-    //        {
-    //            townHouses.Add(buildingPrefabs[rnd.Next(0, buildingPrefabs.Count)]);
-    //            townHouses[j].transform.position = new Vector3(UnityEngine.Random.Range(townArea.x, townArea.width + townArea.x), 0, UnityEngine.Random.Range(townArea.y, townArea.height + townArea.y));
-    //            trees.Add(townHouses[j]);
-    //        }
-
-    //        town.town = townArea;
-    //        town.houses = townHouses;
-    //        towns.Add(town);
-    //    }
-
-    //    int fires = rnd.Next(1, 5);
-    //    for(int i = 0; i < fires; i++)
-    //    {
-    //        fireAreas.Add(new Rect(new Vector2(rnd.Next(0,chunksX), rnd.Next(0,chunksY)), new Vector2(0,0)));
-    //    }
-    //    int treesCount = rnd.Next(100, 500);
-
-    //    for(int i = 0; i < treesCount; i++)
-    //    {
-    //        float treeX = UnityEngine.Random.Range(0, (chunkWidth * chunksX));
-    //        float treeY = UnityEngine.Random.Range(0, (chunkWidth * chunksY));
-
-    //        GameObject tree = treePrefabs[rnd.Next(0, treePrefabs.Count)];
-    //        tree.transform.position = new Vector3(treeX, 0, treeY);
-    //        trees.Add(tree);
-    //    }
-
-    //    for (int chunkY = 0; chunkY < chunksY; chunkY++)
-    //    {
-    //        for(int chunkX = 0; chunkX < chunksX; chunkX++)
-    //        {
-    //            GameObject primitive = GameObject.CreatePrimitive(PrimitiveType.Plane);
-    //            chunks[chunkX, chunkY] = primitive;
-    //            chunks[chunkX, chunkY].transform.position = new Vector3(chunkX * (chunkWidth + 3) + (chunkWidth / 2), 0, chunkY * (chunkHeight + 3) + (chunkHeight / 2));
-    //            chunks[chunkX, chunkY].gameObject.name = " Chunk " + chunkX + " " + chunkY;
-    //            chunks[chunkX, chunkY].gameObject.tag = "Terrain";
-    //            float[,] noiseMap = NoiseGeneration.GenerateNoiseMap(chunkWidth + 3, chunkHeight + 3, seed, noiseScale, octaves, persistance, lacunarity, new Vector2((chunkX * (chunkWidth + 3)), (chunkY * (chunkHeight + 3))), noiseData.normalizeMode);
-    //            for (int noiseY = 0; noiseY < chunkHeight; noiseY++)
-    //            {
-    //                for (int noiseX = 0; noiseX < chunkWidth; noiseX++)
-    //                {
-    //                    int globalNoiseX = noiseX + (chunkX * chunkWidth ) + 3;
-    //                    int globalNoiseY = noiseY + (chunkY * chunkHeight) + 3;
-    //                    //Debug.Log("noise Pos " + globalNoiseX + " " + globalNoiseY);
-
-    //                    for (int t = 0; t < towns.Count; t++)
-    //                    {
-    //                        if (towns[t].town.Contains(new Vector2(globalNoiseX, chunkHeight - globalNoiseY)))
-    //                        {
-    //                            Debug.Log("Found Rect" + towns[t].town + " on chunk " + chunkX + " , " + chunkY + " at noise position " + noiseX + " , " + noiseY + " world position " + globalNoiseX + " , " + globalNoiseY);
-    //                            if (towns[t].townHeight == 0)
-    //                            { 
-    //                                towns[t].townNoiseHeight = noiseMap[noiseX, noiseY];
-    //                                towns[t].townHeight = meshHeightCurve.Evaluate(noiseMap[noiseX, noiseY]) * meshHeightMultiplier;
-    //                                Debug.Log("townheight of town " + t + " set to " + towns[t].townHeight);
-    //                            }
-    //                            else
-    //                            {
-    //                                Debug.Log("Terrain height set to " + towns[t].townHeight);
-    //                                noiseMap[noiseX, noiseY] = towns[t].townNoiseHeight;
-
-    //                            }
-
-    //                        }
-
-
-    //                    }
-    //                }
-    //                MapData mapData = GenerateMapData(noiseMap);
-
-    //                if (chunks[chunkX, chunkY].GetComponent<Renderer>() == null)
-    //                {
-    //                    chunks[chunkX, chunkY].AddComponent<Renderer>();
-    //                }
-    //                display.textureRender[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<Renderer>();
-
-    //                if (chunks[chunkX, chunkY].GetComponent<MeshFilter>() == null)
-    //                {
-    //                    chunks[chunkX, chunkY].AddComponent<MeshFilter>();
-    //                }
-    //                display.meshFilter[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshFilter>();
-    //                if (chunks[chunkX, chunkY].GetComponent<MeshRenderer>() == null)
-    //                {
-    //                    chunks[chunkX, chunkY].AddComponent<MeshRenderer>();
-    //                }
-    //                display.MeshRenderer[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshRenderer>();
-    //                if (chunks[chunkX, chunkY].GetComponent<MeshCollider>() == null)
-    //                {
-    //                    chunks[chunkX, chunkY].AddComponent<MeshCollider>();
-    //                }
-
-    //                display.meshCollider[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshCollider>();
-    //                display.MeshRenderer[chunkX, chunkY].sharedMaterial = terrainMat;
-
-    //                display.DrawMesh(MeshGen.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, 0, true), chunkX, chunkY);
-    //            }
-    //        }
-    //    }
-
-    //}
-
-
-    public void CreateMap()
-    {
-        //Spawn towns
-        MapDisplay display = FindObjectOfType<MapDisplay>();
-        display.textureRender = new Renderer[chunksX, chunksY];
-        display.meshFilter = new MeshFilter[chunksX, chunksY];
-        display.MeshRenderer = new MeshRenderer[chunksX, chunksY];
-        display.meshCollider = new MeshCollider[chunksX, chunksY];
-        int townsAmount = 1;
-        for (int i = 0; i < townsAmount; i++)
-        {
-            Town town = new Town();
-            Rect townArea = new Rect();
-
-
-            //townArea.x = UnityEngine.Random.Range(0, (chunkWidth * chunksX));
-            //townArea.y = UnityEngine.Random.Range(0, (chunkHeight * chunksY));
-            //townArea.width = UnityEngine.Random.Range(6, 20);
-            //townArea.height = UnityEngine.Random.Range(6, 20);
-
-            townArea.position = townPos;
-            townArea.width = 6;
-            townArea.height = 6;
-            int houses = rnd.Next(1, 5);
-            List<GameObject> townHouses = new List<GameObject>();
-
-
-            for (int j = 0; j < houses; j++)
-            {
-                townHouses.Add(buildingPrefabs[rnd.Next(0, buildingPrefabs.Count)]);
-                townHouses[j].transform.position = new Vector3(UnityEngine.Random.Range(townArea.x, townArea.width + townArea.x), 0, UnityEngine.Random.Range(townArea.y, townArea.height + townArea.y));
-                trees.Add(townHouses[j]);
-            }
-
-            town.town = townArea;
-            town.houses = townHouses;
-            towns.Add(town);
-        }
-
-        //Create noiseMap
-        float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap(chunksX * chunkWidth, chunksY * chunkHeight, seed, noiseScale, octaves, persistance, lacunarity, new Vector2(0, 0), noiseData.normalizeMode);
+        navMeshSurface = new NavMeshSurface[mapSize,mapSize];
+        chunks = new GameObject[mapSize, mapSize];
+        GameObject helipad = Instantiate(heliPadPrefab, new Vector3(UnityEngine.Random.Range(0, mapSize * chunkSize), -1, UnityEngine.Random.Range(0, mapSize * chunkSize)), Quaternion.identity);
+        Marker helipadCompassMarker = helipad.AddComponent<Marker>();
+        helipadCompassMarker.icon = helipadIcon;
+        UIController.AddMarker(helipadCompassMarker);
+        Instantiate(helicopterPrefab, new Vector3(helipad.transform.position.x, .85f, helipad.transform.position.z), Quaternion.identity);
+        float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap(mapSize * chunkSize, mapSize * chunkSize, rnd.Next(0, 100), noiseScale, octaves, persistance, lacunarity, new Vector2(0, 0), NoiseGeneration.NormalizeMode.Global);
         ////Flatten terrain around structures such as towns
         //for(int y = 0; y < globalNoiseMap.GetLength(1); y++)
         //{
@@ -445,21 +76,21 @@ public class MapGenerator : MonoBehaviour
         //        }
         //    }
         //}
-        for (int chunkY = 0; chunkY < chunksY; chunkY++)
+        for (int chunkY = 0; chunkY < mapSize; chunkY++)
         {
-            for (int chunkX = 0; chunkX < chunksX; chunkX++)
+            for (int chunkX = 0; chunkX < mapSize; chunkX++)
             {
                 chunks[chunkX, chunkY] = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                chunks[chunkX, chunkY].transform.position = new Vector3((chunkX * chunkWidth), 0, -(chunkY * chunkHeight));
+                chunks[chunkX, chunkY].transform.position = new Vector3((chunkX * chunkSize), 0, -(chunkY * chunkSize));
                 chunks[chunkX, chunkY].gameObject.name = "Chunk " + chunkX + " , " + chunkY;
-                float[,] localNoiseMap = new float[chunkWidth, chunkHeight];
-                
-                for (int y = 0; y < chunkHeight; y++)
+                float[,] localNoiseMap = new float[chunkSize, chunkSize];
+
+                for (int y = 0; y < chunkSize; y++)
                 {
-                    for (int x = 0; x < chunkWidth; x++)
+                    for (int x = 0; x < chunkSize; x++)
                     {
                         //Debug.DrawRay(new Vector3(x + (chunkX * chunkWidth), 0, y + (chunkY * chunkHeight)), Vector3.down, Color.red, Mathf.Infinity);
-                        localNoiseMap[x, y] = globalNoiseMap[x + (chunkWidth * chunkX), y + (chunkHeight * chunkY)];
+                        localNoiseMap[x, y] = globalNoiseMap[x + (chunkSize * chunkX), y + (chunkSize * chunkY)];
                     }
                 }
                 MapData mapData = GenerateMapData(localNoiseMap);
@@ -490,40 +121,230 @@ public class MapGenerator : MonoBehaviour
 
                 display.MeshRenderer[chunkX, chunkY].sharedMaterial = terrainMat;
 
-                display.DrawMesh(MeshGen.GenerateTerrainMesh(localNoiseMap, meshHeightMultiplier, meshHeightCurve, 0, true, chunkX, chunkY, chunkWidth, chunkHeight), chunkX, chunkY);
+                display.DrawMesh(MeshGen.GenerateTerrainMesh(localNoiseMap, meshHeightMultiplier, meshHeightCurve, 0, true, chunkX, chunkY, chunkSize, chunkSize), chunkX, chunkY);
                 Bounds meshBounds = display.meshFilter[chunkX, chunkY].sharedMesh.bounds;
-                Debug.Log($"Chunk [{chunkX},{chunkY}] Bounds: sizeX={meshBounds.size.x}, sizeZ={meshBounds.size.z}");
+            }
+        }
+        int reps = rnd.Next(1, 5);
+        for (int i = 0; i < reps; i++)
+        {
+            Town town = new Town();
+            Rect townArea = new Rect();
+            float townWidth;
+            float townLength;
+            float townX;
+            float townZ;
+            townX = UnityEngine.Random.Range(0, mapSize * chunkSize);
+            townZ = UnityEngine.Random.Range(0, mapSize * chunkSize);
+            while (Vector2.Distance(new Vector2(townX, townZ), new Vector2(helipad.transform.position.x, helipad.transform.position.z)) < 20)
+            {
+                townX = UnityEngine.Random.Range(0, mapSize * chunkSize);
+                townZ = UnityEngine.Random.Range(0, mapSize * chunkSize);
+            }
+            townWidth = UnityEngine.Random.Range(6, 20);
+            townLength = UnityEngine.Random.Range(6, 20);
+            while (!RectContainsRect(new Rect(townX, townZ, townWidth, townLength), new Rect(new Vector2(0, 0), new Vector2(chunkSize * mapSize, chunkSize * mapSize))))
+            {
+                townX = UnityEngine.Random.Range(0, mapSize * chunkSize);
+                townZ = UnityEngine.Random.Range(0, mapSize * chunkSize);
+                townWidth = UnityEngine.Random.Range(15, 20);
+                townLength = UnityEngine.Random.Range(15, 20);
+            }
+            Debug.Log(new Rect(townX, townZ, townWidth, townLength));
+            townArea = new Rect(new Vector2(townX, townZ), new Vector2(townWidth, townLength));
+            town.town = townArea;
+            town.townPickupPoint.x = UnityEngine.Random.Range(town.town.x - 15, town.town.width + town.town.x + 15);
+            town.townPickupPoint.y = UnityEngine.Random.Range(town.town.y - 15, town.town.width + town.town.y + 15);
+            town.townPickupPoint.width = 7;
+            town.townPickupPoint.height = 7;
+            town.townCitizenCount = rnd.Next(5, 10);
+            DrawRect(town.townPickupPoint, 1, townPickupZoneMat, .1f);
+            GameObject townOBJ = new GameObject();
+            townOBJ.name = "Town " + i;
+            townOBJ.transform.position = new Vector3(townX, 0, townZ);
+            Marker townMarker = townOBJ.AddComponent<Marker>();
+            townMarker.icon = townIcon;
+            UIController.AddMarker(townMarker);
+            town.townMarker = townMarker;
+            towns.Add(town);
+        }
+        for (int i = 0; i < rnd.Next(500, 1000); i++)
+        {
+            float treeX;
+            float treeZ;
+
+            treeX = UnityEngine.Random.Range(0, chunkSize * mapSize);
+            treeZ = UnityEngine.Random.Range(0, chunkSize * mapSize);
+
+            for (int j = 0; j < towns.Count; j++)
+            {
+                if (!towns[j].town.Contains(new Vector2(treeX, treeZ)) && !towns[j].townPickupPoint.Contains(new Vector2(treeX, treeZ)))
+                {
+                    trees.Add(Instantiate(treePrefab, new Vector3(treeX, 0, treeZ), Quaternion.identity));
+                }
+            }
+
+        }
+        for (int i = 0; i < rnd.Next(1, 5); i++)
+        {
+            fireAreas.Add(new Rect(new Vector2(trees[rnd.Next(0, trees.Count)].transform.position.x, trees[rnd.Next(0, trees.Count)].transform.position.z), new Vector2(0, 0)));
+        }
+        for (int i = 0; i < towns.Count; i++)
+        {
+            int houses = rnd.Next(3, 8);
+            List<GameObject> townHouses = new List<GameObject>();
+            for (int j = 0; j < houses; j++)
+            {
+                float houseX = 0;
+                float houseZ = 0;
+                houseX = UnityEngine.Random.Range(towns[i].town.x, towns[i].town.width + towns[i].town.x);
+                houseZ = UnityEngine.Random.Range(towns[i].town.y, towns[i].town.height + towns[i].town.y);
+                townHouses.Add(Instantiate(buildingPrefabs[rnd.Next(0, buildingPrefabs.Count)], new Vector3(houseX, towns[i].townHeight, houseZ), Quaternion.identity));
+                trees.Add(townHouses[j]);
+            }
+
+            towns[i].houses = townHouses;
+            for (int j = 0; j < towns[i].townCitizenCount; j++)
+            {
+                GameObject citizen = Instantiate(citizenPrefab, new Vector3(UnityEngine.Random.Range(towns[i].townPickupPoint.x - 10, towns[i].townPickupPoint.x + towns[i].townPickupPoint.width + 10), citizenPrefab.transform.lossyScale.y + 1, UnityEngine.Random.Range(towns[i].townPickupPoint.y - 10, towns[i].townPickupPoint.y + towns[i].townPickupPoint.height + 10)), Quaternion.identity);
+                citizen.GetComponent<Citizen>().townIndex = i;
             }
         }
 
-
-
-
+    }
+    public void DebugDrawRect(Rect rect, float height, Color color)
+    {
+        Debug.DrawLine(new Vector3(rect.x, height, rect.y), new Vector3(rect.width + rect.x, height, rect.y), color);
+        Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.y), new Vector3(rect.width + rect.x, height, rect.height + rect.y), color);
+        Debug.DrawLine(new Vector3(rect.width + rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.height + rect.y), color);
+        Debug.DrawLine(new Vector3(rect.x, height, rect.height + rect.y), new Vector3(rect.x, height, rect.y), color);
     }
 
+    public void DrawRect(Rect rect, float height, Material mat, float lineWidth)
+    {
+        GameObject rectOBJ = new GameObject();
+        LineRenderer lineRend = rectOBJ.AddComponent<LineRenderer>();
+
+        lineRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        lineRend.material = mat;
+        lineRend.startWidth = lineWidth;
+        lineRend.endWidth = lineWidth;
+        lineRend.positionCount = 5;
+        lineRend.SetPosition(0, new Vector3(rect.x, height, rect.y));
+        lineRend.SetPosition(1, new Vector3(rect.x + rect.width, height, rect.y));
+        lineRend.SetPosition(2, new Vector3(rect.x + rect.width, height, rect.y + rect.height));
+        lineRend.SetPosition(3, new Vector3(rect.x, height, rect.y + rect.height));
+        lineRend.SetPosition(4, new Vector3(rect.x, height, rect.y));
+    }
     MapData GenerateMapData(float[,] noiseMap)
     {
         textureData.ApplyToMaterial(terrainMat);
         return new MapData(noiseMap);
     }
-    private void OnValidate()
+    public void DebugDrawRectCentered(Rect rect, float height, Color color)
     {
-        if (chunkWidth < 1)
+        Debug.DrawLine(new Vector3(-(rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), new Vector3((rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), color);
+        Debug.DrawLine(new Vector3((rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), new Vector3((rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), color);
+        Debug.DrawLine(new Vector3((rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), new Vector3(-(rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), color);
+        Debug.DrawLine(new Vector3(-(rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), new Vector3(-(rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), color);
+    }
+    // Update is called once per frame
+    void Update()
+    {
+
+        for (int i = 0; i < fireAreas.Count; i++)
         {
-            chunkWidth = 1;
+            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width + 0.01f, fireAreas[i].height + 0.01f));
+            DebugDrawRectCentered(fireAreas[i], 1, Color.red);
         }
-        if (chunkHeight < 1)
+        for (int i = 0; i < towns.Count; i++)
         {
-            chunkHeight = 1;
+            DebugDrawRect(towns[i].town, 1, Color.green);
+
+            if (towns[i].townCitizenCount == 0)
+            {
+                UIController.RemoveMarker(towns[i].townMarker);
+            }
+            for (int j = 0; j < towns[i].houses.Count; j++)
+            {
+                DebugDrawRect(new Rect(new Vector2(towns[i].houses[j].transform.position.x, towns[i].houses[j].transform.position.z), new Vector2(1, 1)), 1, Color.yellow);
+            }
         }
-        if (octaves < 1)
+        for (int i = 0; i < trees.Count; i++)
         {
-            octaves = 1;
+            for (int f = 0; f < fireAreas.Count; f++)
+            {
+                if (RectContains(trees[i].transform.position, fireAreas[f]))
+                {
+                    if (!burningTrees.Contains(trees[i]) && rnd.Next(0, 500) == 2)
+                    {
+                        burningTrees.Add(trees[i]);
+                        GameObject fire = Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + transform.lossyScale.y, trees[i].transform.position.z), Quaternion.identity);
+                        fire.transform.localScale = new Vector3(2, 2, 2);
+                        fires.Add(fire);
+                    }
+                    if (trees[i].GetComponent<Tree>().fireCycleLoop > rnd.Next(1000, 2000))
+                    {
+                        for (int j = 0; j < burningTrees.Count; j++)
+                        {
+                            if (trees[i] == burningTrees[j] && !burntTrees.Contains(trees[i]))
+                            {
+                                burntTrees.Add(burningTrees[j]);
+                                Destroy(fires[j].gameObject);
+                                for (int t = 0; t < trees[i].GetComponent<Tree>().burnableParts.Count; t++)
+                                {
+                                    Material mat = trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial;
+                                    mat = new Material(mat);
+                                    mat.color = Color.black;
+                                    trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial = mat;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
         }
-        if (lacunarity < 1)
+        for (int i = 0; i < burningTrees.Count; i++)
         {
-            lacunarity = 1;
+            burningTrees[i].GetComponent<Tree>().fireCycleLoop++;
         }
+    }
+    public bool RectContains(Vector3 Input, Rect Rect)
+    {
+        if ((Input.x < (Rect.width / 2) + Rect.x)
+            && (Input.x > -(Rect.width / 2) + Rect.x)
+            && (Input.z < (Rect.height / 2) + Rect.y)
+            && (Input.z > -(Rect.height / 2) + Rect.y))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool RectContainsRect(Rect Input, Rect Rect)
+    {
+        if ((-Input.width / 2) + Input.x >= (-Rect.width / 2) + Rect.x && (Input.height / 2) + Input.y <= (Rect.width / 2) + Rect.y)
+        {
+            return true;
+        }
+        else if ((-Input.width / 2) + Input.x >= (-Rect.width / 2) + Rect.x && (-Input.height / 2) + Input.y >= (-Rect.width / 2) + Rect.y)
+        {
+            return true;
+        }
+        else if ((Input.width / 2) + Input.x <= (Rect.width / 2) + Rect.x && (-Input.height / 2) + Input.y >= (-Rect.width / 2) + Rect.y)
+        {
+            return true;
+        }
+        else if ((Input.width / 2) + Input.x <= (Rect.width / 2) + Rect.x && (Input.height / 2) + Input.y <= (Rect.width / 2) + Rect.y)
+        {
+            return true;
+        }
+        else return false;
     }
 }
 [System.Serializable]
