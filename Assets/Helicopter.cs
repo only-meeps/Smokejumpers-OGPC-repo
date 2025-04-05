@@ -64,6 +64,7 @@ public class Helicopter : MonoBehaviour
         rotateL = inputs.General.RotateL;
         up = inputs.General.Up;
         down = inputs.General.Down;
+        inputs.General.Enable();
         engineToggle.Enable();
         tiltF.Enable();
         tiltB.Enable();
@@ -85,6 +86,7 @@ public class Helicopter : MonoBehaviour
         rotateL = inputs.General.RotateL;
         up = inputs.General.Up;
         down = inputs.General.Down;
+        inputs.General.Disable();
         engineToggle.Disable();
         tiltF.Disable();
         tiltB.Disable();
