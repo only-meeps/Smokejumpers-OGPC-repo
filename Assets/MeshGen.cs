@@ -1,6 +1,7 @@
 using UnityEngine;
 
 using System.Collections;
+using NUnit.Framework;
 
 
 
@@ -10,7 +11,7 @@ public static class MeshGen
 
 
 
-    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail, bool useFlatShading, int chunkX, int chunkY, int chunkWidth, int chunkHeight)
+    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail, bool useFlatShading)
 
     {
 
@@ -19,7 +20,6 @@ public static class MeshGen
 
 
         int meshSimplificationIncrement = (levelOfDetail == 0) ? 1 : levelOfDetail * 2;
-
 
 
         int borderedSize = heightMap.GetLength(0);
@@ -65,11 +65,11 @@ public static class MeshGen
 
 
 
-        for (int y = 0; y < borderedSize ; y += meshSimplificationIncrement)
+        for (int y = 0; y < borderedSize ; y ++)
 
         {
 
-            for (int x = 0; x < borderedSize; x += meshSimplificationIncrement)
+            for (int x = 0; x < borderedSize; x ++)
 
             {
 
@@ -81,8 +81,6 @@ public static class MeshGen
 
                 Vector3 vertexPosition = new Vector3(topLeftX + percent.x * meshSizeUnsimplified, height, topLeftZ - percent.y * meshSizeUnsimplified);
 
-
-
                 meshData.AddVertex(vertexPosition, percent, vertexIndex);
 
 
@@ -90,9 +88,9 @@ public static class MeshGen
                 if (x < borderedSize && y < borderedSize)
                 {
                     int a = vertexIndicesMap[x, y];
-                    int b = vertexIndicesMap[Mathf.Min(x + meshSimplificationIncrement, borderedSize - 1), y];
-                    int c = vertexIndicesMap[x, Mathf.Min(y + meshSimplificationIncrement, borderedSize - 1)];
-                    int d = vertexIndicesMap[Mathf.Min(x + meshSimplificationIncrement, borderedSize - 1), Mathf.Min(y + meshSimplificationIncrement, borderedSize - 1)];
+                    int b = vertexIndicesMap[Mathf.Min(x + 1, borderedSize - 1), y];
+                    int c = vertexIndicesMap[x, Mathf.Min(y + 1, borderedSize - 1)];
+                    int d = vertexIndicesMap[Mathf.Min(x + 1, borderedSize - 1), Mathf.Min(y + 1, borderedSize - 1)];
                     meshData.AddTriangle(a, d, c);
                     meshData.AddTriangle(d, a, b);
                 }
@@ -161,6 +159,11 @@ public class MeshData
         borderTriangles = new int[24 * verticesPerLine];
 
     }
+
+    public Vector3[] ReturnVertices()
+    {
+        return vertices;
+    } 
 
 
 
