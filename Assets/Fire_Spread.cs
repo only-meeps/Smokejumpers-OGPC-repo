@@ -9,8 +9,6 @@ public class Town
     public List<GameObject> houses;
     public float townHeight;
     public float townNoiseHeight;
-    public float townPickupPointHeight;
-    public float townPickupPointNoiseHeight;
     public Marker townMarker;
 }
 

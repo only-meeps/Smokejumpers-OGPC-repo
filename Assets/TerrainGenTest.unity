@@ -283,7 +283,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 0
+  orthographic: 1
   orthographic size: 20
   m_Depth: -1
   m_CullingMask:
@@ -512,8 +512,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   treePrefab: {fileID: 2306728885231731648, guid: 3a7fa33a36b8dae44ba3c439dfa1b7ef, type: 3}
-  mapSize: 5
-  chunkSize: 30
+  mapSize: 2
+  chunkSize: 5
   trees: []
   burningTrees: []
   burntTrees: []
@@ -564,8 +564,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   terrainMat: {fileID: 2100000, guid: 6cf344ea26681ec458c3b7b491ce5f7f, type: 2}
   textureData: {fileID: 11400000, guid: 4f8025e5d414db844ab990925a2ca3b0, type: 2}
-  townPosEditor: {x: 130, y: -130}
-  townPos: {x: 0, y: 0}
 --- !u!4 &1256976547
 Transform:
   m_ObjectHideFlags: 0
