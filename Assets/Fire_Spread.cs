@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using System.Collections.Generic;
-using Unity.AI.Navigation;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -8,12 +7,8 @@ public class Town
 {
     public Rect town;
     public List<GameObject> houses;
-    public Rect townPickupPoint;
-    public int townCitizenCount;
     public float townHeight;
     public float townNoiseHeight;
-    public float townPickupPointHeight;
-    public float townPickupPointNoiseHeight;
     public Marker townMarker;
 }
 
@@ -44,13 +39,19 @@ public class Fire_Spread : MonoBehaviour
     {
         map.transform.localScale = new Vector3(MapSize.width / 10, 1, MapSize.height / 10);
         map.transform.position = new Vector3(0, 0, 0);
-        navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
-        GameObject helipad = Instantiate(heliPadPrefab, new Vector3(Random.Range(-MapSize.width / 2, MapSize.width / 2), -1, Random.Range(-MapSize.height / 2, MapSize.height / 2)), Quaternion.identity);
-        Marker helipadCompassMarker = helipad.AddComponent<Marker>();
-        helipadCompassMarker.icon = helipadIcon;
-        UIController.AddMarker(helipadCompassMarker);
-        Instantiate(helicopterPrefab, new Vector3(helipad.transform.position.x, .85f, helipad.transform.position.z), Quaternion.identity);
-        
+        for (int i = 0; i < rnd.Next(100, 300); i++)
+        {
+            float treeX;
+            float treeZ;
+            treeX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
+            treeZ = Random.Range(-MapSize.height / 2, MapSize.height / 2);
+            trees.Add(Instantiate(treePrefab, new Vector3(treeX, 0, treeZ), Quaternion.identity));
+   
+        }
+        for (int i = 0; i < rnd.Next(1, 5); i++)
+        {
+            fireAreas.Add(new Rect(new Vector2(trees[rnd.Next(0, trees.Count)].transform.position.x, trees[rnd.Next(0, trees.Count)].transform.position.z), new Vector2(0, 0)));
+        }
         int reps = rnd.Next(1, 5);
         for(int i = 0; i < reps; i++)
         {
@@ -128,13 +129,7 @@ public class Fire_Spread : MonoBehaviour
                 townHouses.Add(Instantiate(buildingPrefabs[rnd.Next(0, buildingPrefabs.Count)], new Vector3(houseX, towns[i].townHeight, houseZ), Quaternion.identity));
                 trees.Add(townHouses[j]);
             }
-            
             towns[i].houses = townHouses;
-            for(int j = 0; j < towns[i].townCitizenCount; j++)
-            {
-                GameObject citizen = Instantiate(citizenPrefab, new Vector3(Random.Range(towns[i].townPickupPoint.x - 10, towns[i].townPickupPoint.x + towns[i].townPickupPoint.width + 10), citizenPrefab.transform.lossyScale.y + 1, Random.Range(towns[i].townPickupPoint.y - 10, towns[i].townPickupPoint.y + towns[i].townPickupPoint.height + 10)), Quaternion.identity);
-                citizen.GetComponent<Citizen>().townIndex = i;
-            }
         }
 
     }
@@ -197,14 +192,12 @@ public class Fire_Spread : MonoBehaviour
             {
                 if (RectContains(trees[i].transform.position, fireAreas[f]))
                 {
-                    if (!burningTrees.Contains(trees[i]) && rnd.Next(0,500) == 2)
+                    if (!burningTrees.Contains(trees[i]) && rnd.Next(0, 100) == 2)
                     {
                         burningTrees.Add(trees[i]);
-                        GameObject fire = Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + transform.lossyScale.y, trees[i].transform.position.z), Quaternion.identity);
-                        fire.transform.localScale = new Vector3(2, 2, 2);
-                        fires.Add(fire);
+                        fires.Add(Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + trees[i].transform.lossyScale.y, trees[i].transform.position.z), Quaternion.identity));
                     }
-                    if (trees[i].GetComponent<Tree>().fireCycleLoop > rnd.Next(1000, 2000))
+                    if (trees[i].GetComponent<Tree>().fireCycleLoop > 1200)
                     {
                         for (int j = 0; j < burningTrees.Count; j++)
                         {
@@ -214,10 +207,8 @@ public class Fire_Spread : MonoBehaviour
                                 Destroy(fires[j].gameObject);
                                 for (int t = 0; t < trees[i].GetComponent<Tree>().burnableParts.Count; t++)
                                 {
-                                    Material mat = trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial;
-                                    mat = new Material(mat);
-                                    mat.color = Color.black;
-                                    trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial = mat;
+                                    trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<MeshRenderer>().sharedMaterial.color = Color.black;
+                                    
                                 }
                                 break;
                             }
@@ -234,10 +225,7 @@ public class Fire_Spread : MonoBehaviour
     }
     public bool RectContains(Vector3 Input, Rect Rect)
     {
-        if     ((Input.x < (Rect.width / 2) + Rect.x)
-            && (Input.x > -(Rect.width / 2) + Rect.x)
-            && (Input.z < (Rect.height / 2) + Rect.y)
-            && (Input.z > -(Rect.height / 2) + Rect.y))
+        if((Input.x < Rect.width/2) && (Input.x > -Rect.width/2) && (Input.z < Rect.height/2) && (Input.z > -Rect.height/2))
         {
             return true;
         }
