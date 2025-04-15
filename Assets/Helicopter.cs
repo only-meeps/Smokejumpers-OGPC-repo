@@ -37,13 +37,6 @@ public class Helicopter : MonoBehaviour
     public float altitudeTarget;
     public float thrust;
     public HeliCollider heliCollider;
-    public int citizensRescued;
-    public int citizensKilled;
-    public int citizensDiedInFire;
-    public int citizensLeft;
-    public List<GameObject> entrances = new List<GameObject>();
-    public int capacity;
-    public int maxCapacity;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -64,7 +57,6 @@ public class Helicopter : MonoBehaviour
         rotateL = inputs.General.RotateL;
         up = inputs.General.Up;
         down = inputs.General.Down;
-        inputs.General.Enable();
         engineToggle.Enable();
         tiltF.Enable();
         tiltB.Enable();
@@ -86,7 +78,6 @@ public class Helicopter : MonoBehaviour
         rotateL = inputs.General.RotateL;
         up = inputs.General.Up;
         down = inputs.General.Down;
-        inputs.General.Disable();
         engineToggle.Disable();
         tiltF.Disable();
         tiltB.Disable();
@@ -101,38 +92,6 @@ public class Helicopter : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        citizensLeft = GameObject.FindGameObjectsWithTag("Citizen").Length;
-        if(citizensLeft == 0)
-        {
-            if(citizensDiedInFire == 0 && citizensKilled == 0)
-            {
-                Debug.Log("You finished the map with a perfect score of " + citizensRescued * 100);
-            }
-            else if(citizensKilled > 0 && citizensDiedInFire == 0)
-            {
-                Debug.Log("You finished the map with a score of " + ((citizensRescued * 100) - (citizensDiedInFire * 50) - (citizensKilled * 200)) + ". You rescued " + citizensRescued + " citizens, and killed " + citizensKilled + " citizens");
-            }
-            else if(citizensDiedInFire > 0 && citizensKilled == 0)
-            {
-                Debug.Log("You finished the map with a score of " + ((citizensRescued * 100) - (citizensDiedInFire * 50) - (citizensKilled * 200)) + ". You rescued " + citizensRescued + " and unfortunatly missed " + citizensDiedInFire + " citizens who died in a fire");
-            }
-            else if(citizensKilled == 0 && citizensRescued == 0 && citizensDiedInFire > 0)
-            {
-                Debug.Log("Are you actually going to play the game?");
-            }
-            else
-            {
-                Debug.Log("You finished the map with a score of " + ((citizensRescued * 100) - (citizensDiedInFire * 50) - (citizensKilled * 200)) + ". You rescued " + citizensRescued + " citizens, killed " + citizensKilled + " citizens and missed " + citizensDiedInFire + " citizens who died in a fire");
-            }        
-        }
-        if (heliCollider.touchingObj != null)
-        {
-            if (heliCollider.touchingObj.name == "helipad")
-            {
-                capacity = 0;
-            }
-        }
-        touching = heliCollider.touching;
         if(transform.eulerAngles.x > 180)
         {
             xAngle = (transform.eulerAngles.x - 360);
@@ -209,14 +168,14 @@ public class Helicopter : MonoBehaviour
                 {
                     if (!heliCollider.touching)
                     {
-                        physicsHeli.transform.Rotate(Vector3.up * rotationSpeedMultiplier * Time.deltaTime);
+                        physicsHeli.transform.Rotate(Vector3.down * rotationSpeedMultiplier * Time.deltaTime);
                     }
                 }
                 if (rotateL.IsPressed())
                 {
                     if (!heliCollider.touching)
                     {
-                        physicsHeli.transform.Rotate(Vector3.down * rotationSpeedMultiplier * Time.deltaTime);
+                        physicsHeli.transform.Rotate(Vector3.up * rotationSpeedMultiplier * Time.deltaTime);
                     }
                 }
             }
