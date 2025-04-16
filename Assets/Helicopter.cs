@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using System;
+using Unity.Cinemachine;
 
 public class Helicopter : MonoBehaviour
 {
@@ -25,12 +26,13 @@ public class Helicopter : MonoBehaviour
     public float rotationSpeedMultiplier;
     public float upDownMultiplier;
     public GameObject physicsHeli;
+    public CinemachineCamera cinemachineCam;
     private float xAngle;
     private float zAngle;
     public bool engineOn;
     public bool touching;
     private Quaternion startingRot;
-    public GameObject camera;
+    public GameObject cameraPrefab;
     public float cameraMoveSpeed;
     public BoxCollider boxCollider;
     public float raycastInterval;
@@ -44,17 +46,11 @@ public class Helicopter : MonoBehaviour
     public List<GameObject> entrances = new List<GameObject>();
     public int capacity;
     public int maxCapacity;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        camera = GameObject.Find("Main Camera");
-        startingRot = new Quaternion(0,0,0,0);
-        Debug.Log("startingRot " +  startingRot);
         inputs = new HelicopterMovement();
-    }
-
-    public void OnEnable()
-    {
         engineToggle = inputs.General.OnOff_Engine_Toggle;
         tiltF = inputs.General.TiltF;
         tiltB = inputs.General.TiltB;
@@ -64,6 +60,16 @@ public class Helicopter : MonoBehaviour
         rotateL = inputs.General.RotateL;
         up = inputs.General.Up;
         down = inputs.General.Down;
+        
+        cinemachineCam = Instantiate(cameraPrefab).GetComponent<CinemachineCamera>();
+        cinemachineCam.Follow = transform;
+
+        startingRot = new Quaternion(0,0,0,0);
+        //Debug.Log("startingRot " +  startingRot);
+    }
+
+    public void OnEnable()
+    {
         inputs.General.Enable();
         engineToggle.Enable();
         tiltF.Enable();
@@ -77,15 +83,6 @@ public class Helicopter : MonoBehaviour
     }
     public void OnDisable()
     {
-        engineToggle = inputs.General.OnOff_Engine_Toggle;
-        tiltF = inputs.General.TiltF;
-        tiltB = inputs.General.TiltB;
-        tiltR = inputs.General.TiltR;
-        tiltL = inputs.General.TiltL;
-        rotateR = inputs.General.RotateR;
-        rotateL = inputs.General.RotateL;
-        up = inputs.General.Up;
-        down = inputs.General.Down;
         inputs.General.Disable();
         engineToggle.Disable();
         tiltF.Disable();
@@ -280,7 +277,7 @@ public class Helicopter : MonoBehaviour
             
 
         }
-
+        /*
         float cameraDistanceFromPlayer = Vector2.Distance(new Vector2(physicsHeli.transform.position.x, physicsHeli.transform.position.z), new Vector2(camera.transform.position.x, camera.transform.position.z));
         if(physicsHeli.transform.position.x > camera.transform.position.x + 15)
         {
@@ -310,6 +307,7 @@ public class Helicopter : MonoBehaviour
                 }
             }
         }
+        */
         if (heliCollider.touching)
         {
             rb.useGravity = true;

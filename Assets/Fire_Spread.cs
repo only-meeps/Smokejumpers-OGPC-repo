@@ -62,13 +62,17 @@ public class Fire_Spread : MonoBehaviour
             float townZ;
             townX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
             townZ = Random.Range(-MapSize.height / 2, MapSize.width / 2);
+            /*
+             
             while (Vector2.Distance(new Vector2(townX, townZ), new Vector2(helipad.transform.position.x, helipad.transform.position.z)) < 20)
             {
                 townX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
                 townZ = Random.Range(-MapSize.height / 2, MapSize.width / 2);
             }
+            */
             townWidth = Random.Range(6, 20);
             townLength = Random.Range(6, 20);
+            /*
             while (!RectContainsRect(new Rect(townX, townZ, townWidth, townLength) , MapSize))
             {
                 townX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
@@ -76,7 +80,8 @@ public class Fire_Spread : MonoBehaviour
                 townWidth = Random.Range(15, 20);
                 townLength = Random.Range(15, 20);
             }
-            Debug.Log(new Rect(townX, townZ, townWidth, townLength));
+            */
+            //Debug.Log(new Rect(townX, townZ, townWidth, townLength));
             townArea = new Rect(new Vector2(townX, townZ), new Vector2(townWidth, townLength));
             town.town = townArea;
             town.townPickupPoint.x = Random.Range(town.town.x - 15, town.town.width + town.town.x + 15);
