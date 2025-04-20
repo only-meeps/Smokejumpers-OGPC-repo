@@ -11,7 +11,9 @@ public class Citizen : MonoBehaviour
     public Vector3 startingPos;
     public bool touchingDoor;
     public bool touchingHeli;
-
+    public bool touchingHospitalDoor;
+    public bool alreadyOnHeli;
+    public Vector3 manuallyAssignedTarget;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -23,43 +25,54 @@ public class Citizen : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        for(int i = 0; i < Fire_Spread.fireAreas.Count; i++)
+        if (!alreadyOnHeli)
         {
-            if (Fire_Spread.RectContains(transform.position, Fire_Spread.fireAreas[i]))
+            for (int i = 0; i < Fire_Spread.fireAreas.Count; i++)
             {
-                Debug.Log("A citizen died in a fire");
-                helicopter.citizensDiedInFire++;
-                Fire_Spread.towns[townIndex].townCitizenCount--;
-                Destroy(this.gameObject);
-            }
-        }
-        if (helicopter.touching && Fire_Spread.towns[townIndex].townPickupPoint.Contains(new Vector2(helicopter.physicsHeli.transform.position.x, helicopter.physicsHeli.transform.position.z)) && helicopter.capacity < helicopter.maxCapacity)
-        {
-            
-            
-            GameObject closestEntrance = helicopter.entrances[0];
-            for(int i = 1; i < helicopter.entrances.Count; i++)
-            {
-                if (Vector3.Distance(helicopter.entrances[i].transform.position, transform.position) < Vector3.Distance(closestEntrance.transform.position, transform.position))
+                if (Fire_Spread.RectContains(transform.position, Fire_Spread.fireAreas[i]))
                 {
-                    closestEntrance = helicopter.entrances[i].gameObject;
+                    Debug.Log("A citizen died in a fire");
+                    helicopter.citizensDiedInFire++;
+                    Fire_Spread.towns[townIndex].townCitizenCount--;
+                    Destroy(this.gameObject);
                 }
             }
-            agent.SetDestination(closestEntrance.transform.position);
-            
+            if (helicopter.touching && Fire_Spread.towns[townIndex].townPickupPoint.Contains(new Vector2(helicopter.physicsHeli.transform.position.x, helicopter.physicsHeli.transform.position.z)) && helicopter.capacity < helicopter.maxCapacity)
+            {
+
+
+                GameObject closestEntrance = helicopter.entrances[0];
+                for (int i = 1; i < helicopter.entrances.Count; i++)
+                {
+                    if (Vector3.Distance(helicopter.entrances[i].transform.position, transform.position) < Vector3.Distance(closestEntrance.transform.position, transform.position))
+                    {
+                        closestEntrance = helicopter.entrances[i].gameObject;
+                    }
+                }
+                agent.SetDestination(closestEntrance.transform.position);
+
+            }
+            else
+            {
+                agent.SetDestination(startingPos);
+            }
+
         }
         else
         {
-            agent.SetDestination(startingPos);
+            agent.SetDestination(manuallyAssignedTarget);
         }
-        if (touchingDoor && helicopter.touching && helicopter.capacity < helicopter.maxCapacity)
+        if (touchingDoor && helicopter.touching && helicopter.capacity < helicopter.maxCapacity && !alreadyOnHeli)
         {
             helicopter.capacity++;
-            helicopter.citizensRescued++;
             Fire_Spread.towns[townIndex].townCitizenCount--;
             Destroy(this.gameObject);
-        } 
+        }
+        if (touchingHospitalDoor)
+        {
+            helicopter.citizensRescued++;
+            Destroy(this.gameObject);
+        }
         else if(touchingHeli && !helicopter.touching)
         {
             Debug.Log("You killed a citizen!");
@@ -67,12 +80,17 @@ public class Citizen : MonoBehaviour
             Fire_Spread.towns[townIndex].townCitizenCount--;
             Destroy(this.gameObject);
         }
+
     }
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Door")
         {
             touchingDoor = true;
+        }
+        if(other.gameObject.tag == "Hospital Door")
+        {
+            touchingHospitalDoor = true;
         }
     }
 
@@ -90,6 +108,7 @@ public class Citizen : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         touchingDoor = false;
+        touchingHospitalDoor = false;
     }
 
 }

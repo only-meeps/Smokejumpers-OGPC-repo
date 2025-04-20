@@ -318,6 +318,7 @@ MonoBehaviour:
   - {fileID: 8631872565573702979}
   capacity: 0
   maxCapacity: 6
+  citizenPrefab: {fileID: 5324021099022924450, guid: 97987d0483c022b4d9b1a431e202ed3a, type: 3}
 --- !u!114 &482442506198664257
 MonoBehaviour:
   m_ObjectHideFlags: 0

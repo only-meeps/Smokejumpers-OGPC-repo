@@ -44,7 +44,6 @@ public class Fire_Spread : MonoBehaviour
     {
         map.transform.localScale = new Vector3(MapSize.width / 10, 1, MapSize.height / 10);
         map.transform.position = new Vector3(0, 0, 0);
-        navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
         GameObject helipad = Instantiate(heliPadPrefab, new Vector3(Random.Range(-MapSize.width / 2, MapSize.width / 2), -1, Random.Range(-MapSize.height / 2, MapSize.height / 2)), Quaternion.identity);
         Marker helipadCompassMarker = helipad.AddComponent<Marker>();
         helipadCompassMarker.icon = helipadIcon;
@@ -62,25 +61,25 @@ public class Fire_Spread : MonoBehaviour
             float townZ;
             townX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
             townZ = Random.Range(-MapSize.height / 2, MapSize.width / 2);
-            /*
+            
              
             while (Vector2.Distance(new Vector2(townX, townZ), new Vector2(helipad.transform.position.x, helipad.transform.position.z)) < 20)
             {
                 townX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
                 townZ = Random.Range(-MapSize.height / 2, MapSize.width / 2);
             }
-            */
+            
             townWidth = Random.Range(6, 20);
             townLength = Random.Range(6, 20);
-            /*
-            while (!RectContainsRect(new Rect(townX, townZ, townWidth, townLength) , MapSize))
+
+            while (!RectContainsRect(new Rect(townX, townZ, townWidth + 20, townLength + 20), MapSize))
             {
                 townX = Random.Range(-MapSize.width / 2, MapSize.width / 2);
                 townZ = Random.Range(-MapSize.height / 2, MapSize.width / 2);
                 townWidth = Random.Range(15, 20);
                 townLength = Random.Range(15, 20);
             }
-            */
+            
             //Debug.Log(new Rect(townX, townZ, townWidth, townLength));
             townArea = new Rect(new Vector2(townX, townZ), new Vector2(townWidth, townLength));
             town.town = townArea;
@@ -236,6 +235,7 @@ public class Fire_Spread : MonoBehaviour
         {
             burningTrees[i].GetComponent<Tree>().fireCycleLoop++;
         }
+        navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
     }
     public bool RectContains(Vector3 Input, Rect Rect)
     {

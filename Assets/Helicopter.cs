@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using System;
 using Unity.Cinemachine;
+using JetBrains.Annotations;
 
 public class Helicopter : MonoBehaviour
 {
@@ -46,6 +47,7 @@ public class Helicopter : MonoBehaviour
     public List<GameObject> entrances = new List<GameObject>();
     public int capacity;
     public int maxCapacity;
+    public GameObject citizenPrefab;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -98,6 +100,7 @@ public class Helicopter : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        
         citizensLeft = GameObject.FindGameObjectsWithTag("Citizen").Length;
         if(citizensLeft == 0)
         {
@@ -126,6 +129,22 @@ public class Helicopter : MonoBehaviour
         {
             if (heliCollider.touchingObj.name == "helipad")
             {
+                for (int i = 0; i < capacity; i++)
+                {
+                    System.Random rnd = new System.Random();
+                    Citizen citizen = Instantiate(citizenPrefab, entrances[rnd.Next(0, entrances.Count)].transform.position, Quaternion.identity).GetComponent<Citizen>();
+                    Vector3 closestHospitalDoor = new Vector3();
+                    for(int j = 0; j < GameObject.FindGameObjectsWithTag("Hospital Door").Length; j++)
+                    {
+                        if (Vector3.Distance(closestHospitalDoor, citizen.transform.position) > Vector3.Distance(GameObject.FindGameObjectsWithTag("Hospital Door")[j].transform.position, citizen.transform.position))
+                        {
+                            closestHospitalDoor = GameObject.FindGameObjectsWithTag("Hospital Door")[j].transform.position;
+
+                        }
+                    }
+                    citizen.manuallyAssignedTarget = closestHospitalDoor;
+                    citizen.alreadyOnHeli = true;
+                }
                 capacity = 0;
             }
         }
@@ -258,6 +277,9 @@ public class Helicopter : MonoBehaviour
                 {
                     transform.rotation = new Quaternion(0, transform.rotation.y, transform.rotation.z, transform.rotation.w);
                 }
+                
+
+                
                 if (zAngle <= -1 || zAngle >= 1)
                 {
                     if (zAngle > 0)
@@ -273,6 +295,8 @@ public class Helicopter : MonoBehaviour
                 {
                     transform.rotation = new Quaternion(transform.rotation.x, transform.rotation.y, 0, transform.rotation.w);
                 }
+                
+
             }
             
 

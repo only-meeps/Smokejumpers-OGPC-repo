@@ -117,15 +117,27 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -5568371526223589888, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1804596384611890544}
+    - targetCorrespondingSourceObject: {fileID: -5568371526223589888, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1023530128353024076}
     - targetCorrespondingSourceObject: {fileID: 8513859187771203891, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8308447695847885116}
+    - targetCorrespondingSourceObject: {fileID: 8513859187771203891, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8499913294637829577}
     - targetCorrespondingSourceObject: {fileID: -6733177361254619370, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1068127475147590833}
+    - targetCorrespondingSourceObject: {fileID: -6733177361254619370, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5216245874848584836}
     - targetCorrespondingSourceObject: {fileID: 8700725330082129686, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1448488029388754790}
+    - targetCorrespondingSourceObject: {fileID: 8700725330082129686, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2615646266567432558}
   m_SourcePrefab: {fileID: 100100000, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
 --- !u!1 &1030408145897560455 stripped
 GameObject:
@@ -153,6 +165,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.9785666, y: 3.977281, z: 1.9544158}
   m_Center: {x: 0.0000009536743, y: 0.0012791752, z: -0.017792134}
+--- !u!208 &5216245874848584836
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1030408145897560455}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1.9890001, y: 1.9890001, z: 0.97700006}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.001, z: -0.018000001}
+  m_TimeToStationary: 0.5
 --- !u!1 &2196463573211345041 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5568371526223589888, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
@@ -179,6 +207,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.9785664, y: 3.9772809, z: 1.9544158}
   m_Center: {x: 0, y: 0.001279175, z: -0.017792014}
+--- !u!208 &1023530128353024076
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2196463573211345041}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1.9890001, y: 1.9890001, z: 0.97700006}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.001, z: -0.018000001}
+  m_TimeToStationary: 0.5
 --- !u!1 &2306728885231731648 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
@@ -227,6 +271,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.3361883, y: 4.441044, z: 5.31102}
   m_Center: {x: 0.17421037, y: 0.16816114, z: 2.6535463}
+--- !u!208 &2615646266567432558
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6088132171612690823}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 2.1680002, y: 2.2210002, z: 2.6560001}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0.17400001, y: 0.16800001, z: 2.654}
+  m_TimeToStationary: 0.5
 --- !u!1 &6549643090043314082 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8513859187771203891, guid: 5abe818ffb77ce842aedfd28e3d712cc, type: 3}
@@ -253,3 +313,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.9785664, y: 3.977281, z: 1.9544156}
   m_Center: {x: -0.0000009536743, y: 0.0012829899, z: -0.017792013}
+--- !u!208 &8499913294637829577
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6549643090043314082}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1.9890001, y: 1.9890001, z: 0.97700006}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.001, z: -0.018000001}
+  m_TimeToStationary: 0.5
