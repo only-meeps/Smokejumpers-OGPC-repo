@@ -88,10 +88,7 @@ public class Citizen : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(collision.gameObject.name == "HelicopterMain")
-        {
-            touchingHeli = true;
-        }
+
 
     }
     public void OnCollisionStay(Collision collision)
@@ -101,6 +98,11 @@ public class Citizen : MonoBehaviour
             helicopter.citizensRescued++;
             Destroy(this.gameObject);
             touchingHospitalDoor = true;
+        }
+        Debug.Log(collision.gameObject.name);
+        if (collision.gameObject.name == "HelicopterMain")
+        {
+            touchingHeli = true;
         }
     }
     private void OnCollisionExit(Collision collision)

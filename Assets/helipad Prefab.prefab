@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5660636570543041454}
   - component: {fileID: 3532997681317307638}
+  - component: {fileID: 5484648835241388093}
   m_Layer: 0
   m_Name: Hospital door
   m_TagString: Hospital Door
@@ -26,11 +27,11 @@ Transform:
   m_GameObject: {fileID: 4574233155466436557}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.416, y: -0.183, z: 0.557}
-  m_LocalScale: {x: 0.09179029, y: 0.22777098, z: 0.13471462}
+  m_LocalPosition: {x: -4.53207, y: 3.035216, z: -7.65}
+  m_LocalScale: {x: 1, y: 1.0888, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9124340402759149428}
+  m_Father: {fileID: 8553819387467676413}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &3532997681317307638
 BoxCollider:
@@ -48,11 +49,38 @@ BoxCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1.6587789, y: 3.3867896, z: 1}
   m_Center: {x: 0.32938954, y: 1.1933945, z: 0}
+--- !u!54 &5484648835241388093
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4574233155466436557}
+  serializedVersion: 4
+  m_Mass: 0.0000001
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0
 --- !u!1 &9199121648439377779
 GameObject:
   m_ObjectHideFlags: 0
@@ -84,8 +112,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 3.91, z: -11.18}
   m_LocalScale: {x: 10.8944, y: 4.78024, z: 7.4231}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 5660636570543041454}
+  m_Children: []
   m_Father: {fileID: 8553819387467676413}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6192371957235235477
@@ -241,6 +268,9 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8ca03f74724325f48828424c993a122e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5660636570543041454}
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8ca03f74724325f48828424c993a122e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9124340402759149428}
