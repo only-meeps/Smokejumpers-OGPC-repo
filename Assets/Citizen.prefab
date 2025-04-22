@@ -153,3 +153,6 @@ MonoBehaviour:
   startingPos: {x: 0, y: 0, z: 0}
   touchingDoor: 0
   touchingHeli: 0
+  touchingHospitalDoor: 0
+  alreadyOnHeli: 0
+  manuallyAssignedTarget: {x: 0, y: 0, z: 0}

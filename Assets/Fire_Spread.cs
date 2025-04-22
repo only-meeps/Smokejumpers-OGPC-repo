@@ -32,6 +32,7 @@ public class Fire_Spread : MonoBehaviour
     public List<Rect> fireAreas = new List<Rect>();
     public GameObject firePrefab;
     public GameObject citizenPrefab;
+    public GameObject player;
     public NavMeshSurface navMeshSurface;
     public GameObject heliPadPrefab;
     public GameObject helicopterPrefab;
@@ -39,6 +40,7 @@ public class Fire_Spread : MonoBehaviour
     public Sprite townIcon;
     public Sprite helipadIcon;
     public Material townPickupZoneMat;
+    public float drawDistance;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -49,6 +51,7 @@ public class Fire_Spread : MonoBehaviour
         helipadCompassMarker.icon = helipadIcon;
         UIController.AddMarker(helipadCompassMarker);
         Instantiate(helicopterPrefab, new Vector3(helipad.transform.position.x, .85f, helipad.transform.position.z), Quaternion.identity);
+        player = GameObject.FindGameObjectWithTag("Helicopter");
         
         int reps = rnd.Next(1, 5);
         for(int i = 0; i < reps; i++)
@@ -179,7 +182,7 @@ public class Fire_Spread : MonoBehaviour
 
         for(int i = 0; i < fireAreas.Count; i++)
         {
-            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width + 0.01f, fireAreas[i].height + 0.01f));
+            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width + 0.05f, fireAreas[i].height + 0.05f));
             DebugDrawRectCentered(fireAreas[i], 1, Color.red);
         }
         for (int i = 0; i < towns.Count; i++)
@@ -197,6 +200,14 @@ public class Fire_Spread : MonoBehaviour
         }
         for(int i = 0; i < trees.Count; i++)
         {
+            if(Vector3.Distance(player.transform.position, trees[i].transform.position) > drawDistance)
+            {
+                trees[i].SetActive(false);
+            }
+            else
+            {
+                trees[i].SetActive(true);
+            }
             for(int f = 0; f < fireAreas.Count; f++)
             {
                 if (RectContains(trees[i].transform.position, fireAreas[f]))
@@ -236,6 +247,20 @@ public class Fire_Spread : MonoBehaviour
             burningTrees[i].GetComponent<Tree>().fireCycleLoop++;
         }
         navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
+        for(int i = 0; i < fires.Count; i++)
+        {
+            if (fires[i] != null)
+            {
+                if (Vector3.Distance(player.transform.position, fires[i].transform.position) > drawDistance)
+                {
+                    fires[i].SetActive(false);
+                }
+                else
+                {
+                    fires[i].SetActive(true);
+                }
+            }
+        }
     }
     public bool RectContains(Vector3 Input, Rect Rect)
     {

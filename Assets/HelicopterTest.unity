@@ -650,6 +650,7 @@ MonoBehaviour:
   fireAreas: []
   firePrefab: {fileID: 1876375917517166, guid: ef30331bc4c461842a1da74c1c8052ab, type: 3}
   citizenPrefab: {fileID: 5324021099022924450, guid: 97987d0483c022b4d9b1a431e202ed3a, type: 3}
+  player: {fileID: 0}
   navMeshSurface: {fileID: 77800393}
   heliPadPrefab: {fileID: 9078858573046112327, guid: a394fc44eaf160249ab6bce366fe2732, type: 3}
   helicopterPrefab: {fileID: 6267809139607738707, guid: 310da415c2da97a47939dccaa704dc3c, type: 3}
@@ -657,6 +658,7 @@ MonoBehaviour:
   townIcon: {fileID: 21300000, guid: 50b6312126cc888408f9e2ff94760599, type: 3}
   helipadIcon: {fileID: 21300000, guid: d339686f25210a945bcd8170db89159e, type: 3}
   townPickupZoneMat: {fileID: 2100000, guid: 8216ad577a79bff45a0f011c8e9f13bd, type: 2}
+  drawDistance: 50
 --- !u!4 &1396080068
 Transform:
   m_ObjectHideFlags: 0

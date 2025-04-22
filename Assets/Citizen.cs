@@ -68,11 +68,6 @@ public class Citizen : MonoBehaviour
             Fire_Spread.towns[townIndex].townCitizenCount--;
             Destroy(this.gameObject);
         }
-        if (touchingHospitalDoor)
-        {
-            helicopter.citizensRescued++;
-            Destroy(this.gameObject);
-        }
         else if(touchingHeli && !helicopter.touching)
         {
             Debug.Log("You killed a citizen!");
@@ -88,10 +83,7 @@ public class Citizen : MonoBehaviour
         {
             touchingDoor = true;
         }
-        if(other.gameObject.tag == "Hospital Door")
-        {
-            touchingHospitalDoor = true;
-        }
+
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -100,15 +92,31 @@ public class Citizen : MonoBehaviour
         {
             touchingHeli = true;
         }
+
+    }
+    public void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.name == "Hospital door")
+        {
+            helicopter.citizensRescued++;
+            Destroy(this.gameObject);
+            touchingHospitalDoor = true;
+        }
     }
     private void OnCollisionExit(Collision collision)
     {
-        touchingHeli = false;
+        if(collision.gameObject.tag == "Helicopter")
+        {
+            touchingHeli = false;
+
+        }
     }
     private void OnTriggerExit(Collider other)
     {
-        touchingDoor = false;
-        touchingHospitalDoor = false;
+        if(other.tag == "Door")
+        {
+            touchingDoor = false;
+        }
     }
 
 }

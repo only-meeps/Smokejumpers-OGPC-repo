@@ -8,6 +8,8 @@ TagManager:
   - Door
   - Citizen
   - Hospital Door
+  - FxTemporaire
+  - Helicopter
   layers:
   - Default
   - TransparentFX
