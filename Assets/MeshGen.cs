@@ -75,11 +75,11 @@ public static class MeshGen
 
                 int vertexIndex = vertexIndicesMap[x, y];
 
-                Vector2 percent = new Vector2((float)x / (borderedSize - 1), (float)y / (borderedSize - 1));
+                Vector2 percent = new Vector2((float)x, (float)y);
 
                 float height = heightCurve.Evaluate(heightMap[x, y]) * heightMultiplier;
 
-                Vector3 vertexPosition = new Vector3(topLeftX + percent.x * meshSizeUnsimplified, height, topLeftZ - percent.y * meshSizeUnsimplified);
+                Vector3 vertexPosition = new Vector3(topLeftX + percent.x, height, topLeftZ - percent.y);
 
                 meshData.AddVertex(vertexPosition, percent, vertexIndex);
 

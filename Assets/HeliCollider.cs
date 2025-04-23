@@ -7,7 +7,12 @@ public class HeliCollider : MonoBehaviour
     public string touchingObjName;
     private void OnCollisionStay(Collision collision)
     {
-        touching = true;
+        if(collision.gameObject.name != "Citizen (Clone)")
+        {
+            touching = true;
+
+        }
+
         touchingObj = collision.gameObject;
         touchingObjName = collision.gameObject.name;
     }

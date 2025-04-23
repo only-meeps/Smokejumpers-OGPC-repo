@@ -86,8 +86,8 @@ public class MapGenerator : MonoBehaviour
             float townZ;
 
             //Assign position
-            townX = rnd.Next(30, (mapSize * chunkSize) - 30);
-            townZ = rnd.Next(30, (mapSize * chunkSize) - 30);
+            townX = rnd.Next(0, (mapSize * chunkSize));
+            townZ = rnd.Next(-(mapSize * chunkSize), 0);
 
             //Assign width
             townWidth = rnd.Next(6, 10);
@@ -112,7 +112,7 @@ public class MapGenerator : MonoBehaviour
         }
 
         //Create a global noise map for all chunks, making sure to generate an extra bit for the missing bits of chunks (generate an extra 2 chunks)
-        float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap((mapSize + 2) * chunkSize, (mapSize + 2) * chunkSize, 1, noiseScale, octaves, persistance, lacunarity, new Vector2(0, 0), NoiseGeneration.NormalizeMode.Global);
+        float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap((mapSize + 1) * chunkSize, (mapSize + 1) * chunkSize, 1, noiseScale, octaves, persistance, lacunarity, new Vector2(0, 0), NoiseGeneration.NormalizeMode.Global);
 
         MeshData globalMeshData = MeshGen.GenerateTerrainMesh(globalNoiseMap, meshHeightMultiplier, meshHeightCurve, 0, true);
 
@@ -126,10 +126,10 @@ public class MapGenerator : MonoBehaviour
 
             for (int x = 0; x < globalNoiseMap.GetLength(0); x++)
             {
-                Vector2 percent = new Vector2((float)x / (globalNoiseMap.GetLength(0) - 1), (float)y / (globalNoiseMap.GetLength(1) - 1));
+                Vector2 percent = new Vector2((float)x, (float)y);
                 Debug.Log(vertices[vertexIndex]);
                 Debug.DrawRay(vertices[vertexIndex], Vector3.up, Color.red, 10000);
-                if (new Rect(new Vector2(helipad.transform.position.x, helipad.transform.position.z), new Vector2(20, 20)).Contains(new Vector2(percent.x * globalNoiseMap.GetLength(0), -percent.y * globalNoiseMap.GetLength(1))))
+                if (new Rect(new Vector2(helipad.transform.position.x, helipad.transform.position.z), new Vector2(20, 20)).Contains(new Vector2(percent.x, -percent.y)))
                 {
                     //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
                     if (helipad.transform.position.y == 0)
@@ -143,7 +143,7 @@ public class MapGenerator : MonoBehaviour
                 }
                 for (int t = 0; t < towns.Count; t++)
                 {
-                    if (new Rect(new Vector2(towns[t].town.x, towns[t].town.y), new Vector2(towns[t].town.width + 5, towns[t].town.height + 5)).Contains(new Vector2(percent.x * globalNoiseMap.GetLength(0), -percent.y * globalNoiseMap.GetLength(1))))
+                    if (new Rect(new Vector2(towns[t].town.x, towns[t].town.y), new Vector2(towns[t].town.width, towns[t].town.height)).Contains(new Vector2(percent.x, -percent.y)))
                     {
                         //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
                         if (towns[t].townHeight == 0)
@@ -156,7 +156,7 @@ public class MapGenerator : MonoBehaviour
                             globalNoiseMap[x, y] = towns[t].townNoiseHeight;
                         }
                     }
-                    if (new Rect(new Vector2(towns[t].townPickupPoint.x, towns[t].townPickupPoint.y), new Vector2(towns[t].townPickupPoint.width + 15, towns[t].townPickupPoint.height + 15)).Contains(new Vector2(percent.x * globalNoiseMap.GetLength(0), -percent.y * globalNoiseMap.GetLength(1))))
+                    if (new Rect(new Vector2(towns[t].townPickupPoint.x, towns[t].townPickupPoint.y), new Vector2(towns[t].townPickupPoint.width, towns[t].townPickupPoint.height)).Contains(new Vector2(percent.x, -percent.y)))
                     {
                         //If the townpickuppointheight has not been set yet, then set the townpickuppointheight to the terrain height, else set the terrain height to the townpickuppointheight
                         if (towns[t].townPickupPointHeight == 0)
@@ -187,16 +187,16 @@ public class MapGenerator : MonoBehaviour
             {
                 //Create the chunk gameobject, place it, and name it
                 chunks[chunkX, chunkY] = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                chunks[chunkX, chunkY].transform.position = new Vector3(chunkX * (chunkSize + 1), 0, -(chunkY * (chunkSize + 1)));
+                chunks[chunkX, chunkY].transform.position = new Vector3(chunkX * (chunkSize), 0, -(chunkY * (chunkSize)));
                 chunks[chunkX, chunkY].gameObject.name = "Chunk " + chunkX + " , " + chunkY;
 
                 //Create a localnoisemap making sure to get the extra 1 tile to account for 10 verticies and 9 tiles
                 float[,] localNoiseMap = new float[chunkSize + 1, chunkSize + 1];
 
                 //Retrieve chunk from globalnoisemap and set it to localnoisemap (less than or equal to making sure to have the extra 1 tile)
-                for (int y = 0; y <= chunkSize; y++)
+                for (int y = 0; y < localNoiseMap.GetLength(0); y++)
                 {
-                    for (int x = 0; x <= chunkSize; x++)
+                    for (int x = 0; x < localNoiseMap.GetLength(1); x++)
                     {
                         localNoiseMap[x, y] = globalNoiseMap[x + (chunkSize * chunkX), y + (chunkSize * chunkY)];
                     }

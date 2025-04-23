@@ -65,6 +65,7 @@ GameObject:
   - component: {fileID: 6259356684401354420}
   - component: {fileID: 6104800001290669323}
   - component: {fileID: 1641284276628100912}
+  - component: {fileID: 7118812100155526556}
   m_Layer: 0
   m_Name: HelicopterMain
   m_TagString: Helicopter
@@ -153,6 +154,22 @@ MonoBehaviour:
   touching: 0
   touchingObj: {fileID: 0}
   touchingObjName: 
+--- !u!208 &7118812100155526556
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6267809139607738707}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1.385, y: 1.505, z: 5.08}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 1.47, z: -2.91}
+  m_TimeToStationary: 0.5
 --- !u!1 &8631872565573702979
 GameObject:
   m_ObjectHideFlags: 0
@@ -319,6 +336,8 @@ MonoBehaviour:
   capacity: 0
   maxCapacity: 6
   citizenPrefab: {fileID: 5324021099022924450, guid: 97987d0483c022b4d9b1a431e202ed3a, type: 3}
+  fuel: 10000
+  fuelEfficency: 0
 --- !u!114 &482442506198664257
 MonoBehaviour:
   m_ObjectHideFlags: 0

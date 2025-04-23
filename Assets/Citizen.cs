@@ -86,11 +86,6 @@ public class Citizen : MonoBehaviour
 
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-
-
-    }
     public void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.name == "Hospital door")

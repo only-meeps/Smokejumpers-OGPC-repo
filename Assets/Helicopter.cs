@@ -48,7 +48,8 @@ public class Helicopter : MonoBehaviour
     public int capacity;
     public int maxCapacity;
     public GameObject citizenPrefab;
-    
+    public float fuel;
+    public float fuelEfficency;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -100,7 +101,14 @@ public class Helicopter : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        
+        RaycastHit hit;
+        if(Physics.Raycast(new Vector3(transform.position.x, transform.position.y - transform.lossyScale.y - 2, transform.position.z), Vector3.down, out hit, Mathf.Infinity))
+        {
+            fuelEfficency = Vector3.Distance(hit.point, transform.position) / 20;
+            Debug.Log(fuelEfficency);
+            
+        }
+
         citizensLeft = GameObject.FindGameObjectsWithTag("Citizen").Length;
         if(citizensLeft == 0)
         {
@@ -178,7 +186,7 @@ public class Helicopter : MonoBehaviour
         }
 
 
-        if (engineOn)
+        if (engineOn && fuel > 0)
         {
 
             if (!heliCollider.touching)
@@ -301,40 +309,24 @@ public class Helicopter : MonoBehaviour
             
 
         }
-        /*
-        float cameraDistanceFromPlayer = Vector2.Distance(new Vector2(physicsHeli.transform.position.x, physicsHeli.transform.position.z), new Vector2(camera.transform.position.x, camera.transform.position.z));
-        if(physicsHeli.transform.position.x > camera.transform.position.x + 15)
+        else if(fuel <= 0)
         {
-            camera.transform.Translate(Vector3.right * cameraMoveSpeed * cameraDistanceFromPlayer * Time.deltaTime);
+            rb.mass = 1;
         }
-        if(physicsHeli.transform.position.x < camera.transform.position.x - 15)
+        if (engineOn)
         {
-            camera.transform.Translate(Vector3.left * cameraMoveSpeed * cameraDistanceFromPlayer * Time.deltaTime);
+            fuel -= fuelEfficency;
         }
-        if(physicsHeli.transform.position.z > camera.transform.position.z +15)
-        {
-            camera.transform.Translate(Vector3.up * cameraMoveSpeed * cameraDistanceFromPlayer * Time.deltaTime);
-        }
-        if(physicsHeli.transform.position.z < camera.transform.position.z -15)
-        {
-            camera.transform.Translate(Vector3.down * cameraMoveSpeed * cameraDistanceFromPlayer * Time.deltaTime);
-        }
-        camera.transform.position = new Vector3(camera.transform.position.x, physicsHeli.transform.position.y + 40, camera.transform.position.z);
-        for(float x = 0; x < boxCollider.size.x; x+=raycastInterval)
-        {
-            for(float z = 0; z < boxCollider.size.z; z+=raycastInterval)
-            {
-                RaycastHit hit;
-                if (Physics.Raycast(new Vector3(x + (boxCollider.transform.position.x) - boxCollider.size.x / 2 ,  boxCollider.transform.position.y, z + (boxCollider.transform.position.z) - boxCollider.size.z / 2) , Vector3.down, out hit, 1f))
-                {
-                    Debug.DrawLine(new Vector3(x + (boxCollider.transform.position.x ) - boxCollider.size.x / 2, boxCollider.transform.position.y, z + (boxCollider.transform.position.z) - boxCollider.size.z / 2), hit.point, Color.green);
-                }
-            }
-        }
-        */
-        if (heliCollider.touching)
+        if (heliCollider.touching || fuel <= 0)
         {
             rb.useGravity = true;
+            if(fuel <= 0)
+            {
+                rb.freezeRotation = false;
+                rb.constraints = RigidbodyConstraints.None;
+                transform.rotation = rb.rotation;
+                rb.AddExplosionForce(30, new Vector3(transform.position.x + UnityEngine.Random.Range(-2,2), transform.position.y + UnityEngine.Random.Range(-2, 2), transform.position.x + UnityEngine.Random.Range(-2, 2)), 100);
+            }
         }
         else
         {

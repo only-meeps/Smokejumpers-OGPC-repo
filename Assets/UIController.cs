@@ -9,8 +9,11 @@ public class UIController : MonoBehaviour
 {
     public RawImage compass;
     public HeliCollider heli;
-
+    public Slider fuelEfficencyDisplay;
+    public Slider fuelDisplay;
+    public Slider capacityDisplay;
     public GameObject iconPrefab;
+    public Helicopter helicopter;
 
     List<Marker> markers = new List<Marker>();
 
@@ -18,13 +21,21 @@ public class UIController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        helicopter = GameObject.FindObjectsByType<Helicopter>(FindObjectsSortMode.None)[0];
         compassUnit = compass.rectTransform.rect.width / 360f;
         heli = GameObject.FindFirstObjectByType<HeliCollider>();
+        fuelDisplay.maxValue = helicopter.fuel;
+        capacityDisplay.maxValue = helicopter.maxCapacity;
+        fuelEfficencyDisplay.maxValue = 1.5f;
     }
 
     // Update is called once per frame
     void Update()
     {
+        fuelDisplay.value = helicopter.fuel;
+        capacityDisplay.value = helicopter.capacity;
+        fuelEfficencyDisplay.value = helicopter.fuelEfficency;
+
         compass.uvRect = new Rect(heli.transform.localEulerAngles.y / 360f, 0f, 1f, 1f);
 
         foreach(Marker marker in markers)
@@ -44,7 +55,12 @@ public class UIController : MonoBehaviour
 
     public void RemoveMarker (Marker marker)
     {
-        markers.Remove(marker);
+        if(marker != null && marker.GetComponent<Image>() != null)
+        {
+            marker.GetComponent<Image>().sprite = null;
+            markers.Remove(marker);
+        }
+
     }
 
     Vector2 GetPosOnCompass(Marker marker)
