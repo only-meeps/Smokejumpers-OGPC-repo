@@ -7,6 +7,7 @@ public class Citizen : MonoBehaviour
     public NavMeshAgent agent;
     public Helicopter helicopter;
     public Fire_Spread Fire_Spread;
+    public MapGenerator MapGenerator;
     public int townIndex;
     public Vector3 startingPos;
     public bool touchingDoor;
@@ -14,66 +15,136 @@ public class Citizen : MonoBehaviour
     public bool touchingHospitalDoor;
     public bool alreadyOnHeli;
     public Vector3 manuallyAssignedTarget;
+    public bool usingFireSpread;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Awake()
+    void Start()
     {
         startingPos = transform.position;
         helicopter = FindObjectsByType<Helicopter>(FindObjectsSortMode.None)[0];
-        Fire_Spread = FindObjectsByType<Fire_Spread>(FindObjectsSortMode.None)[0];
+        if (FindObjectsByType<Fire_Spread>(FindObjectsSortMode.None).Length != 0)
+        {
+            usingFireSpread = true;
+            Fire_Spread = FindObjectsByType<Fire_Spread>(FindObjectsSortMode.None)[0];
+        }
+        else if(FindObjectsByType<MapGenerator>(FindObjectsSortMode.None).Length != 0)
+        {
+            MapGenerator = FindObjectsByType<MapGenerator>(FindObjectsSortMode.None)[0];
+            usingFireSpread = false;
+        }
+        else
+        {
+            Debug.LogError("No MapGen or Fire Spread scripts found, please add them!");
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!alreadyOnHeli)
+        if (usingFireSpread)
         {
-            for (int i = 0; i < Fire_Spread.fireAreas.Count; i++)
+            if (!alreadyOnHeli)
             {
-                if (Fire_Spread.RectContains(transform.position, Fire_Spread.fireAreas[i]))
+                for (int i = 0; i < Fire_Spread.fireAreas.Count; i++)
                 {
-                    Debug.Log("A citizen died in a fire");
-                    helicopter.citizensDiedInFire++;
-                    Fire_Spread.towns[townIndex].townCitizenCount--;
-                    Destroy(this.gameObject);
-                }
-            }
-            if (helicopter.touching && Fire_Spread.towns[townIndex].townPickupPoint.Contains(new Vector2(helicopter.physicsHeli.transform.position.x, helicopter.physicsHeli.transform.position.z)) && helicopter.capacity < helicopter.maxCapacity)
-            {
-
-
-                GameObject closestEntrance = helicopter.entrances[0];
-                for (int i = 1; i < helicopter.entrances.Count; i++)
-                {
-                    if (Vector3.Distance(helicopter.entrances[i].transform.position, transform.position) < Vector3.Distance(closestEntrance.transform.position, transform.position))
+                    if (Fire_Spread.RectContains(transform.position, Fire_Spread.fireAreas[i]))
                     {
-                        closestEntrance = helicopter.entrances[i].gameObject;
+                        Debug.Log("A citizen died in a fire");
+                        helicopter.citizensDiedInFire++;
+                        Fire_Spread.towns[townIndex].townCitizenCount--;
+                        Destroy(this.gameObject);
                     }
                 }
-                agent.SetDestination(closestEntrance.transform.position);
+                if (helicopter.touching && Fire_Spread.towns[townIndex].townPickupPoint.Contains(new Vector2(helicopter.physicsHeli.transform.position.x, helicopter.physicsHeli.transform.position.z)) && helicopter.capacity < helicopter.maxCapacity)
+                {
+
+
+                    GameObject closestEntrance = helicopter.entrances[0];
+                    for (int i = 1; i < helicopter.entrances.Count; i++)
+                    {
+                        if (Vector3.Distance(helicopter.entrances[i].transform.position, transform.position) < Vector3.Distance(closestEntrance.transform.position, transform.position))
+                        {
+                            closestEntrance = helicopter.entrances[i].gameObject;
+                        }
+                    }
+                    agent.SetDestination(closestEntrance.transform.position);
+
+                }
+                else
+                {
+                    agent.SetDestination(startingPos);
+                }
 
             }
             else
             {
-                agent.SetDestination(startingPos);
+                agent.SetDestination(manuallyAssignedTarget);
             }
-
+            if (touchingDoor && helicopter.touching && helicopter.capacity < helicopter.maxCapacity && !alreadyOnHeli)
+            {
+                helicopter.capacity++;
+                Fire_Spread.towns[townIndex].townCitizenCount--;
+                Destroy(this.gameObject);
+            }
+            else if (touchingHeli && !helicopter.touching)
+            {
+                Debug.Log("You killed a citizen!");
+                helicopter.citizensKilled++;
+                Fire_Spread.towns[townIndex].townCitizenCount--;
+                Destroy(this.gameObject);
+            }
         }
         else
         {
-            agent.SetDestination(manuallyAssignedTarget);
-        }
-        if (touchingDoor && helicopter.touching && helicopter.capacity < helicopter.maxCapacity && !alreadyOnHeli)
-        {
-            helicopter.capacity++;
-            Fire_Spread.towns[townIndex].townCitizenCount--;
-            Destroy(this.gameObject);
-        }
-        else if(touchingHeli && !helicopter.touching)
-        {
-            Debug.Log("You killed a citizen!");
-            helicopter.citizensKilled++;
-            Fire_Spread.towns[townIndex].townCitizenCount--;
-            Destroy(this.gameObject);
+            if (!alreadyOnHeli)
+            {
+                for (int i = 0; i < MapGenerator.fireAreas.Count; i++)
+                {
+                    if (MapGenerator.fireAreas[i].Contains(transform.position))
+                    {
+                        Debug.Log("A citizen died in a fire");
+                        helicopter.citizensDiedInFire++;
+                        MapGenerator.towns[townIndex].townCitizenCount--;
+                        Destroy(this.gameObject);
+                    }
+                }
+                if (helicopter.touching && MapGenerator.towns[townIndex].townPickupPoint.Contains(new Vector2(helicopter.physicsHeli.transform.position.x, helicopter.physicsHeli.transform.position.z)) && helicopter.capacity < helicopter.maxCapacity)
+                {
+
+
+                    GameObject closestEntrance = helicopter.entrances[0];
+                    for (int i = 1; i < helicopter.entrances.Count; i++)
+                    {
+                        if (Vector3.Distance(helicopter.entrances[i].transform.position, transform.position) < Vector3.Distance(closestEntrance.transform.position, transform.position))
+                        {
+                            closestEntrance = helicopter.entrances[i].gameObject;
+                        }
+                    }
+                    agent.SetDestination(closestEntrance.transform.position);
+
+                }
+                else
+                {
+                    agent.SetDestination(startingPos);
+                }
+
+            }
+            else
+            {
+                agent.SetDestination(manuallyAssignedTarget);
+            }
+            if (touchingDoor && helicopter.touching && helicopter.capacity < helicopter.maxCapacity && !alreadyOnHeli)
+            {
+                helicopter.capacity++;
+                MapGenerator.towns[townIndex].townCitizenCount--;
+                Destroy(this.gameObject);
+            }
+            else if (touchingHeli && !helicopter.touching)
+            {
+                Debug.Log("You killed a citizen!");
+                helicopter.citizensKilled++;
+                MapGenerator.towns[townIndex].townCitizenCount--;
+                Destroy(this.gameObject);
+            }
         }
 
     }

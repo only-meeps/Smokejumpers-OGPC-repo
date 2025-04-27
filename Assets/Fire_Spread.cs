@@ -200,7 +200,7 @@ public class Fire_Spread : MonoBehaviour
         }
         for(int i = 0; i < trees.Count; i++)
         {
-            if(Vector3.Distance(player.transform.position, trees[i].transform.position) > drawDistance)
+            if (Vector3.Distance(player.transform.position, trees[i].transform.position) > drawDistance)
             {
                 trees[i].SetActive(false);
             }
@@ -208,7 +208,7 @@ public class Fire_Spread : MonoBehaviour
             {
                 trees[i].SetActive(true);
             }
-            for(int f = 0; f < fireAreas.Count; f++)
+            for (int f = 0; f < fireAreas.Count; f++)
             {
                 if (RectContains(trees[i].transform.position, fireAreas[f]))
                 {

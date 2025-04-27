@@ -10,6 +10,7 @@ using UnityEngine.XR;
 using static UnityEditor.U2D.ScriptablePacker;
 using Unity.AI.Navigation;
 using NUnit.Framework.Constraints;
+using UnityEngine.AI;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -27,9 +28,8 @@ public class MapGenerator : MonoBehaviour
     public GameObject[,] chunks;
     public GameObject firePrefab;
     public GameObject citizenPrefab;
-    public NavMeshSurface[,] navMeshSurface;
     public GameObject heliPadPrefab;
-    float helipadHeight;
+    float helipadNoiseHeight;
     public GameObject helicopterPrefab;
     public UIController UIController;
     public Sprite townIcon;
@@ -46,30 +46,29 @@ public class MapGenerator : MonoBehaviour
     public TextureData textureData;
     public Vector2 townPosEditor;
     public Vector2 townPos;
+    public GameObject player;
+    public float drawDistance;
+    public int chunkDrawDistance;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        navMeshSurface = new NavMeshSurface[mapSize, mapSize];
 
         //Create chunk gameobjects and gameobject component lists
         chunks = new GameObject[mapSize, mapSize];
-        display.textureRender = new Renderer[mapSize, mapSize];
         display.meshFilter = new MeshFilter[mapSize, mapSize];
         display.MeshRenderer = new MeshRenderer[mapSize, mapSize];
         display.meshCollider = new MeshCollider[mapSize, mapSize];
+        display.navMeshSurfaces = new NavMeshSurface[mapSize, mapSize];
 
         //Spawn helicopter & helipad
         GameObject helipad = Instantiate(heliPadPrefab, new Vector3(UnityEngine.Random.Range(0, mapSize * chunkSize), -1, UnityEngine.Random.Range(0, -mapSize * chunkSize)), Quaternion.identity);
-        Instantiate(helicopterPrefab, new Vector3(helipad.transform.position.x, .85f, helipad.transform.position.z), Quaternion.identity);
+        player = Instantiate(helicopterPrefab, new Vector3(helipad.transform.position.x, .85f, helipad.transform.position.z), Quaternion.identity);
 
         //Assign compass markers to the helipad
         Marker helipadCompassMarker = helipad.AddComponent<Marker>();
         helipadCompassMarker.icon = helipadIcon;
         UIController.AddMarker(helipadCompassMarker);
-
-        //Pick number of towns
-        navMeshSurface = new NavMeshSurface[mapSize, mapSize];
 
         //Pick number of towns
         int townCount = rnd.Next(1, 4);
@@ -98,10 +97,18 @@ public class MapGenerator : MonoBehaviour
             town.town = townArea;
 
             //Create town pickup zone
-            town.townPickupPoint.x = UnityEngine.Random.Range(town.town.x - 30, town.town.width + town.town.x + 30);
-            town.townPickupPoint.y = UnityEngine.Random.Range(town.town.y - 30, town.town.width + town.town.y + 30);
+            town.townPickupPoint.x = rnd.Next(Mathf.RoundToInt(town.town.x - 30), Mathf.RoundToInt(town.town.width + town.town.x + 30));
+            town.townPickupPoint.y = rnd.Next(Mathf.RoundToInt((town.town.y - 30)), Mathf.RoundToInt(town.town.height + town.town.y + 30));
             town.townPickupPoint.width = rnd.Next(5, 7);
             town.townPickupPoint.height = rnd.Next(5,7);
+            while (!new Rect(new Vector2(0,0), new Vector2((mapSize * chunkSize) - 10, (mapSize* chunkSize) - 10)).Contains(town.townPickupPoint.position))
+            {
+                town.townPickupPoint.x = rnd.Next(Mathf.RoundToInt(town.town.x - 30), Mathf.RoundToInt(town.town.width + town.town.x + 30));
+                town.townPickupPoint.y = rnd.Next(Mathf.RoundToInt((town.town.y - 30)), Mathf.RoundToInt(town.town.height + town.town.y + 30));
+                town.townPickupPoint.width = rnd.Next(5, 7);
+                town.townPickupPoint.height = rnd.Next(5, 7);
+            }
+           
 
 
             //Pick number of citizens
@@ -127,23 +134,25 @@ public class MapGenerator : MonoBehaviour
             for (int x = 0; x < globalNoiseMap.GetLength(0); x++)
             {
                 Vector2 percent = new Vector2((float)x, (float)y);
-                Debug.Log(vertices[vertexIndex]);
-                Debug.DrawRay(vertices[vertexIndex], Vector3.up, Color.red, 10000);
-                if (new Rect(new Vector2(helipad.transform.position.x, helipad.transform.position.z), new Vector2(20, 20)).Contains(new Vector2(percent.x, -percent.y)))
+                //Debug.Log(vertices[vertexIndex]);
+                //Debug.DrawRay(vertices[vertexIndex], Vector3.up, Color.red, 10000);
+                if (new Rect(new Vector2(helipad.transform.position.x - 15, helipad.transform.position.z - 15), new Vector2(30,300)).Contains(new Vector2(percent.x, -percent.y)))
                 {
                     //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
-                    if (helipad.transform.position.y == 0)
+                    if (helipadNoiseHeight == 0)
                     {
-                        helipad.transform.position = new Vector3(helipad.transform.position.x, meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier, helipad.transform.position.z);          
+                        helipad.transform.position = new Vector3(helipad.transform.position.x, meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier, helipad.transform.position.z);
+                        helipadNoiseHeight = globalNoiseMap[x, y];
+                        player.transform.position = new Vector3(player.transform.position.x, helipad.transform.position.y + 1, player.transform.position.z);
                     }
                     else
                     {
-                        globalNoiseMap[x, y] = helipad.transform.position.y / meshHeightMultiplier;
+                        globalNoiseMap[x, y] = helipadNoiseHeight;
                     }
                 }
                 for (int t = 0; t < towns.Count; t++)
                 {
-                    if (new Rect(new Vector2(towns[t].town.x, towns[t].town.y), new Vector2(towns[t].town.width, towns[t].town.height)).Contains(new Vector2(percent.x, -percent.y)))
+                    if (new Rect(new Vector2(towns[t].town.x, towns[t].town.y), new Vector2(towns[t].town.width + 1, towns[t].town.height + 1)).Contains(new Vector2(percent.x, -percent.y)))
                     {
                         //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
                         if (towns[t].townHeight == 0)
@@ -156,7 +165,7 @@ public class MapGenerator : MonoBehaviour
                             globalNoiseMap[x, y] = towns[t].townNoiseHeight;
                         }
                     }
-                    if (new Rect(new Vector2(towns[t].townPickupPoint.x, towns[t].townPickupPoint.y), new Vector2(towns[t].townPickupPoint.width, towns[t].townPickupPoint.height)).Contains(new Vector2(percent.x, -percent.y)))
+                    if (new Rect(new Vector2(towns[t].townPickupPoint.x, towns[t].townPickupPoint.y), new Vector2(towns[t].townPickupPoint.width + 8, towns[t].townPickupPoint.height + 8)).Contains(new Vector2(percent.x, -percent.y)))
                     {
                         //If the townpickuppointheight has not been set yet, then set the townpickuppointheight to the terrain height, else set the terrain height to the townpickuppointheight
                         if (towns[t].townPickupPointHeight == 0)
@@ -186,7 +195,7 @@ public class MapGenerator : MonoBehaviour
             for (int chunkX = 0; chunkX < mapSize; chunkX++)
             {
                 //Create the chunk gameobject, place it, and name it
-                chunks[chunkX, chunkY] = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                chunks[chunkX, chunkY] = new GameObject();
                 chunks[chunkX, chunkY].transform.position = new Vector3(chunkX * (chunkSize), 0, -(chunkY * (chunkSize)));
                 chunks[chunkX, chunkY].gameObject.name = "Chunk " + chunkX + " , " + chunkY;
 
@@ -204,11 +213,6 @@ public class MapGenerator : MonoBehaviour
                 MapData mapData = GenerateMapData(localNoiseMap);
 
                 //Add components
-                if (chunks[chunkX, chunkY].GetComponent<Renderer>() == null)
-                {
-                    chunks[chunkX, chunkY].AddComponent<Renderer>();
-                }
-                display.textureRender[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<Renderer>();
 
                 if (chunks[chunkX, chunkY].GetComponent<MeshFilter>() == null)
                 {
@@ -227,12 +231,18 @@ public class MapGenerator : MonoBehaviour
                 }
 
                 display.meshCollider[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshCollider>();
+                if (chunks[chunkX, chunkY].GetComponent<NavMeshSurface>() == null)
+                {
+                    chunks[chunkX, chunkY].AddComponent<NavMeshSurface>();
+                }
+                display.navMeshSurfaces[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<NavMeshSurface>();
 
                 display.MeshRenderer[chunkX, chunkY].sharedMaterial = terrainMat;
 
                 //Finially draw the mesh
                 MeshData meshData = MeshGen.GenerateTerrainMesh(localNoiseMap, meshHeightMultiplier, meshHeightCurve, 0, true);
                 display.DrawMesh(meshData, chunkX, chunkY);
+                chunks[chunkX, chunkY].GetComponent<NavMeshSurface>().BuildNavMesh();
             }
         }
 
@@ -283,29 +293,29 @@ public class MapGenerator : MonoBehaviour
 
             //Spawn houses
             
-            for (int j = 0; j < houses; j++)
-            {
-                //Assign variables
-                float houseX = 0;
-                float houseZ = 0;
+            //for (int j = 0; j < houses; j++)
+            //{
+            //    //Assign variables
+            //    float houseX = 0;
+            //    float houseZ = 0;
 
-                //Assign position
-                houseX = UnityEngine.Random.Range(towns[i].town.x, towns[i].town.width + towns[i].town.x);
-                houseZ = UnityEngine.Random.Range(towns[i].town.y, towns[i].town.height + towns[i].town.y);
+            //    //Assign position
+            //    houseX = UnityEngine.Random.Range(towns[i].town.x, towns[i].town.width + towns[i].town.x);
+            //    houseZ = UnityEngine.Random.Range(towns[i].town.y, towns[i].town.height + towns[i].town.y);
 
-                //Add house to town list
-                townHouses.Add(Instantiate(buildingPrefabs[rnd.Next(0, buildingPrefabs.Count)], new Vector3(houseX, towns[i].townHeight, houseZ), Quaternion.identity));
+            //    //Add house to town list
+            //    townHouses.Add(Instantiate(buildingPrefabs[rnd.Next(0, buildingPrefabs.Count)], new Vector3(houseX, towns[i].townHeight, houseZ), Quaternion.identity));
 
-                //Add house to burnable objects
-                trees.Add(townHouses[j]);
-            }
+            //    //Add house to burnable objects
+            //    trees.Add(townHouses[j]);
+            //}
 
-            towns[i].houses = townHouses;
+            //towns[i].houses = townHouses;
 
             //Spawn citizens
             for (int j = 0; j < towns[i].townCitizenCount; j++)
             {
-                GameObject citizen = Instantiate(citizenPrefab, new Vector3(UnityEngine.Random.Range(towns[i].townPickupPoint.x - 10, towns[i].townPickupPoint.x + towns[i].townPickupPoint.width + 10), citizenPrefab.transform.lossyScale.y + 1, UnityEngine.Random.Range(towns[i].townPickupPoint.y - 10, towns[i].townPickupPoint.y + towns[i].townPickupPoint.height + 10)), Quaternion.identity);
+                GameObject citizen = Instantiate(citizenPrefab, new Vector3(UnityEngine.Random.Range(towns[i].townPickupPoint.x, towns[i].townPickupPoint.x + towns[i].townPickupPoint.width + 7), citizenPrefab.transform.lossyScale.y + 1 + towns[i].townPickupPointHeight, UnityEngine.Random.Range(towns[i].townPickupPoint.y, towns[i].townPickupPoint.y + towns[i].townPickupPoint.height + 8)), Quaternion.identity);
                 //Set citizen town index
                 
                 citizen.GetComponent<Citizen>().townIndex = i;
@@ -314,176 +324,6 @@ public class MapGenerator : MonoBehaviour
         }
         
 
-    }
-    public void GenerateMap()
-    {
-        for(int i = 0; i < towns.Count; i++)
-        {
-            Destroy(GameObject.Find("town pickup point " + i));
-        }
-        towns = new List<Town>();
-        
-        navMeshSurface = new NavMeshSurface[mapSize, mapSize];
-
-        for(int x = 0; x < chunks.GetLength(0); x++)
-        {
-            for(int y = 0; y < chunks.GetLength(1); y++)
-            {
-                Destroy(chunks[x, y]);
-            }
-        }
-        //Create chunk gameobjects and gameobject component lists
-        chunks = new GameObject[mapSize, mapSize];
-        display.textureRender = new Renderer[mapSize, mapSize];
-        display.meshFilter = new MeshFilter[mapSize, mapSize];
-        display.MeshRenderer = new MeshRenderer[mapSize, mapSize];
-        display.meshCollider = new MeshCollider[mapSize, mapSize];
-
-        //Pick number of towns
-        int townCount = 1;
-
-        //Create towns
-        for (int i = 0; i < townCount; i++)
-        {
-            //Create variables
-            Town town = new Town();
-            Rect townArea = new Rect();
-            float townWidth;
-            float townLength;
-            float townX;
-            float townZ;
-
-            //Assign position
-            townX = townPos.x;
-            townZ = townPos.y;
-
-            //Assign width
-            townWidth = 13;
-            townLength = 13;
-
-            //Assign town position and size
-            townArea = new Rect(new Vector2(townX, townZ), new Vector2(townWidth, townLength));
-            town.town = townArea;
-
-            //Create town pickup zone
-            town.townPickupPoint.x = UnityEngine.Random.Range(town.town.x - 15, town.town.width + town.town.x + 15);
-            town.townPickupPoint.y = UnityEngine.Random.Range(town.town.y - 15, town.town.width + town.town.y + 15);
-            town.townPickupPoint.width = 5;
-            town.townPickupPoint.height = 5;
-            
-
-            //Pick number of citizens
-            town.townCitizenCount = rnd.Next(5, 10);
-
-            //Add town to list of towns
-            towns.Add(town);
-        }
-
-        //Create a global noise map for all chunks, making sure to generate an extra bit for the missing bits of chunks (generate an extra 2 chunks)
-        float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap((mapSize + 2) * chunkSize, (mapSize + 2) * chunkSize, 1, noiseScale, octaves, persistance, lacunarity, new Vector2(0, 0), NoiseGeneration.NormalizeMode.Global);
-        
-        //Flatten terrain around structures such as towns
-
-        for (int y = 0; y < globalNoiseMap.GetLength(1); y++)
-        {
-
-            for (int x = 0; x < globalNoiseMap.GetLength(0); x++)
-            {
-                Vector2 percent = new Vector2((float)x / (globalNoiseMap.GetLength(0) - 1), (float)y / (globalNoiseMap.GetLength(1) - 1));
-                Debug.DrawRay(new Vector3(percent.x * globalNoiseMap.GetLength(0), 0, -percent.y * globalNoiseMap.GetLength(1)), Vector3.up, Color.red, 1000);
-                for (int t = 0; t < towns.Count; t++)
-                {
-                    if (new Rect(new Vector2(towns[t].town.x, towns[t].town.y), new Vector2(towns[t].town.width + 5, towns[t].town.height + 5)).Contains(new Vector2(percent.x * globalNoiseMap.GetLength(0), -percent.y * globalNoiseMap.GetLength(1))))
-                    {
-                        //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
-                        if (towns[t].townHeight == 0)
-                        {
-                            towns[t].townHeight = meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier;
-                            towns[t].townNoiseHeight = globalNoiseMap[x, y];
-                        }
-                        else
-                        {
-                            globalNoiseMap[x, y] = towns[t].townNoiseHeight;
-                        }
-                    }
-                    if (new Rect(new Vector2(towns[t].townPickupPoint.x, towns[t].townPickupPoint.y), new Vector2(towns[t].townPickupPoint.width + 15, towns[t].townPickupPoint.height + 15)).Contains(new Vector2(percent.x * globalNoiseMap.GetLength(0), -percent.y * globalNoiseMap.GetLength(1))))
-                    {
-                        //If the townpickuppointheight has not been set yet, then set the townpickuppointheight to the terrain height, else set the terrain height to the townpickuppointheight
-                        if (towns[t].townPickupPointHeight == 0)
-                        {
-                            towns[t].townPickupPointHeight = meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier;
-                            towns[t].townPickupPointNoiseHeight = globalNoiseMap[x, y];
-                        }
-                        else
-                        {
-                            globalNoiseMap[x, y] = towns[t].townPickupPointNoiseHeight;
-                        }
-                    }
-                }
-            }
-        }
-
-
-        for (int i = 0; i < towns.Count; i++)
-        {
-            //Draw town pickup zone
-            DrawRect(towns[i].townPickupPoint, towns[i].townPickupPointHeight, townPickupZoneMat, .1f, "town pickup point " + i.ToString());
-        }
-        //Spawn chunks and assign verticies
-        for (int chunkY = 0; chunkY < mapSize; chunkY++)
-        {
-            for (int chunkX = 0; chunkX < mapSize; chunkX++)
-            {
-                //Create the chunk gameobject, place it, and name it
-                chunks[chunkX, chunkY] = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                chunks[chunkX, chunkY].transform.position = new Vector3(chunkX * (chunkSize + 1), 0, -(chunkY * (chunkSize + 1)));
-                chunks[chunkX, chunkY].gameObject.name = "Chunk " + chunkX + " , " + chunkY;
-
-                //Create a localnoisemap making sure to get the extra 1 tile to account for 10 verticies and 9 tiles
-                float[,] localNoiseMap = new float[chunkSize + 1, chunkSize + 1];
-
-                //Retrieve chunk from globalnoisemap and set it to localnoisemap (less than or equal to making sure to have the extra 1 tile)
-                for (int y = 0; y <= chunkSize; y++)
-                {
-                    for (int x = 0; x <= chunkSize; x++)
-                    {
-                        localNoiseMap[x, y] = globalNoiseMap[x + (chunkSize * chunkX), y + (chunkSize * chunkY)];
-                    }
-                }
-                MapData mapData = GenerateMapData(localNoiseMap);
-
-                //Add components
-                if (chunks[chunkX, chunkY].GetComponent<Renderer>() == null)
-                {
-                    chunks[chunkX, chunkY].AddComponent<Renderer>();
-                }
-                display.textureRender[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<Renderer>();
-
-                if (chunks[chunkX, chunkY].GetComponent<MeshFilter>() == null)
-                {
-                    chunks[chunkX, chunkY].AddComponent<MeshFilter>();
-                }
-                display.meshFilter[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshFilter>();
-                if (chunks[chunkX, chunkY].GetComponent<MeshRenderer>() == null)
-                {
-                    chunks[chunkX, chunkY].AddComponent<MeshRenderer>();
-                }
-                display.MeshRenderer[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshRenderer>();
-
-                if (chunks[chunkX, chunkY].GetComponent<MeshCollider>() == null)
-                {
-                    chunks[chunkX, chunkY].AddComponent<MeshCollider>();
-                }
-
-                display.meshCollider[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshCollider>();
-
-                display.MeshRenderer[chunkX, chunkY].sharedMaterial = terrainMat;
-
-                //Finially draw the mesh
-                MeshData meshData = MeshGen.GenerateTerrainMesh(localNoiseMap, meshHeightMultiplier, meshHeightCurve, 0, true);
-                display.DrawMesh(meshData, chunkX, chunkY);
-            }
-        }
     }
     //Debug method to draw a rect CORNER ALIGNED
     public void DebugDrawRect(Rect rect, float height, Color color)
@@ -531,6 +371,21 @@ public class MapGenerator : MonoBehaviour
 
     void Update()
     {
+        for(int y = 0; y < chunks.GetLength(1); y++)
+        {
+            for (int x = 0; x < chunks.GetLength(0); x++)
+            {
+                if(Vector2.Distance(new Vector2(player.transform.position.x, player.transform.position.z), new Vector2(chunks[x,y].transform.position.x, chunks[x, y].transform.position.z)) < chunkDrawDistance)
+                {
+                    chunks[x, y].SetActive(true);
+                }
+                else
+                {
+                    chunks[x, y].SetActive(false);
+                }
+            }
+        }
+
         /*
         if(townPosEditor != townPos)
         {
@@ -554,15 +409,19 @@ public class MapGenerator : MonoBehaviour
             {
                 UIController.RemoveMarker(towns[i].townMarker);
             }
-            for (int j = 0; j < towns[i].houses.Count; j++)
-            {
-                DebugDrawRect(new Rect(new Vector2(towns[i].houses[j].transform.position.x, towns[i].houses[j].transform.position.z), new Vector2(1, 1)), 1, Color.yellow);
-            }
         }
 
         //Check trees
         for (int i = 0; i < trees.Count; i++)
         {
+            if (Vector3.Distance(player.transform.position, trees[i].transform.position) > drawDistance)
+            {
+                trees[i].SetActive(false);
+            }
+            else
+            {
+                trees[i].SetActive(true);
+            }
             for (int f = 0; f < fireAreas.Count; f++)
             {
                 //Check if tree is inside of fire
@@ -612,6 +471,7 @@ public class MapGenerator : MonoBehaviour
             }
 
         }
+
 
         //Update burn time
         for (int i = 0; i < burningTrees.Count; i++)
