@@ -11,6 +11,7 @@ using static UnityEditor.U2D.ScriptablePacker;
 using Unity.AI.Navigation;
 using NUnit.Framework.Constraints;
 using UnityEngine.AI;
+using System.Threading.Tasks;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -49,11 +50,12 @@ public class MapGenerator : MonoBehaviour
     public GameObject player;
     public float drawDistance;
     public int chunkDrawDistance;
+    public NavMeshSurface navSurface;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    async void Start()
     {
-
+        navSurface = GameObject.FindFirstObjectByType<NavMeshSurface>();
         //Create chunk gameobjects and gameobject component lists
         chunks = new GameObject[mapSize, mapSize];
         display.meshFilter = new MeshFilter[mapSize, mapSize];
@@ -101,18 +103,20 @@ public class MapGenerator : MonoBehaviour
             town.townPickupPoint.y = rnd.Next(Mathf.RoundToInt((town.town.y - 30)), Mathf.RoundToInt(town.town.height + town.town.y + 30));
             town.townPickupPoint.width = rnd.Next(5, 7);
             town.townPickupPoint.height = rnd.Next(5,7);
-            while (!new Rect(new Vector2(0,0), new Vector2((mapSize * chunkSize) - 10, (mapSize* chunkSize) - 10)).Contains(town.townPickupPoint.position))
-            {
-                town.townPickupPoint.x = rnd.Next(Mathf.RoundToInt(town.town.x - 30), Mathf.RoundToInt(town.town.width + town.town.x + 30));
-                town.townPickupPoint.y = rnd.Next(Mathf.RoundToInt((town.town.y - 30)), Mathf.RoundToInt(town.town.height + town.town.y + 30));
-                town.townPickupPoint.width = rnd.Next(5, 7);
-                town.townPickupPoint.height = rnd.Next(5, 7);
-            }
            
 
 
             //Pick number of citizens
             town.townCitizenCount = rnd.Next(5, 10);
+
+            //Add town marker
+            GameObject townOBJ = new GameObject();
+            townOBJ.name = "Town " + i;
+            townOBJ.transform.position = new Vector3(townX, 0, townZ);
+            Marker townMarker = townOBJ.AddComponent<Marker>();
+            townMarker.icon = townIcon;
+            UIController.AddMarker(townMarker);
+            town.townMarker = townMarker;
 
             //Add town to list of towns
             towns.Add(town);
@@ -120,10 +124,6 @@ public class MapGenerator : MonoBehaviour
 
         //Create a global noise map for all chunks, making sure to generate an extra bit for the missing bits of chunks (generate an extra 2 chunks)
         float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap((mapSize + 1) * chunkSize, (mapSize + 1) * chunkSize, 1, noiseScale, octaves, persistance, lacunarity, new Vector2(0, 0), NoiseGeneration.NormalizeMode.Global);
-
-        MeshData globalMeshData = MeshGen.GenerateTerrainMesh(globalNoiseMap, meshHeightMultiplier, meshHeightCurve, 0, true);
-
-        Vector3[] vertices = globalMeshData.ReturnVertices();
 
         //Flatten terrain around structures such as towns
 
@@ -136,7 +136,7 @@ public class MapGenerator : MonoBehaviour
                 Vector2 percent = new Vector2((float)x, (float)y);
                 //Debug.Log(vertices[vertexIndex]);
                 //Debug.DrawRay(vertices[vertexIndex], Vector3.up, Color.red, 10000);
-                if (new Rect(new Vector2(helipad.transform.position.x - 15, helipad.transform.position.z - 15), new Vector2(30,300)).Contains(new Vector2(percent.x, -percent.y)))
+                if (new Rect(new Vector2(helipad.transform.position.x - 15, helipad.transform.position.z - 15), new Vector2(30,30)).Contains(new Vector2(percent.x, -percent.y)))
                 {
                     //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
                     if (helipadNoiseHeight == 0)
@@ -194,61 +194,13 @@ public class MapGenerator : MonoBehaviour
         {
             for (int chunkX = 0; chunkX < mapSize; chunkX++)
             {
-                //Create the chunk gameobject, place it, and name it
-                chunks[chunkX, chunkY] = new GameObject();
-                chunks[chunkX, chunkY].transform.position = new Vector3(chunkX * (chunkSize), 0, -(chunkY * (chunkSize)));
-                chunks[chunkX, chunkY].gameObject.name = "Chunk " + chunkX + " , " + chunkY;
-
-                //Create a localnoisemap making sure to get the extra 1 tile to account for 10 verticies and 9 tiles
-                float[,] localNoiseMap = new float[chunkSize + 1, chunkSize + 1];
-
-                //Retrieve chunk from globalnoisemap and set it to localnoisemap (less than or equal to making sure to have the extra 1 tile)
-                for (int y = 0; y < localNoiseMap.GetLength(0); y++)
-                {
-                    for (int x = 0; x < localNoiseMap.GetLength(1); x++)
-                    {
-                        localNoiseMap[x, y] = globalNoiseMap[x + (chunkSize * chunkX), y + (chunkSize * chunkY)];
-                    }
-                }
-                MapData mapData = GenerateMapData(localNoiseMap);
-
-                //Add components
-
-                if (chunks[chunkX, chunkY].GetComponent<MeshFilter>() == null)
-                {
-                    chunks[chunkX, chunkY].AddComponent<MeshFilter>();
-                }
-                display.meshFilter[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshFilter>();
-                if (chunks[chunkX, chunkY].GetComponent<MeshRenderer>() == null)
-                {
-                    chunks[chunkX, chunkY].AddComponent<MeshRenderer>();
-                }
-                display.MeshRenderer[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshRenderer>();
-
-                if (chunks[chunkX, chunkY].GetComponent<MeshCollider>() == null)
-                {
-                    chunks[chunkX, chunkY].AddComponent<MeshCollider>();
-                }
-
-                display.meshCollider[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshCollider>();
-                if (chunks[chunkX, chunkY].GetComponent<NavMeshSurface>() == null)
-                {
-                    chunks[chunkX, chunkY].AddComponent<NavMeshSurface>();
-                }
-                display.navMeshSurfaces[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<NavMeshSurface>();
-
-                display.MeshRenderer[chunkX, chunkY].sharedMaterial = terrainMat;
-
-                //Finially draw the mesh
-                MeshData meshData = MeshGen.GenerateTerrainMesh(localNoiseMap, meshHeightMultiplier, meshHeightCurve, 0, true);
-                display.DrawMesh(meshData, chunkX, chunkY);
-                chunks[chunkX, chunkY].GetComponent<NavMeshSurface>().BuildNavMesh();
+                await DrawChunk(chunkX, chunkY, globalNoiseMap);
             }
         }
-
+        navSurface.BuildNavMesh();
         //Create trees
         //Eventually should be based off of noisemap
-        
+
         for (int i = 0; i < rnd.Next(500, 1000); i++)
         {
             //Create variables
@@ -259,6 +211,11 @@ public class MapGenerator : MonoBehaviour
             treeX = UnityEngine.Random.Range(0, chunkSize * mapSize);
             treeZ = UnityEngine.Random.Range(0, -chunkSize * mapSize);
 
+            while(new Rect(new Vector2(helipad.transform.position.x - 15, helipad.transform.position.z - 15), new Vector2(30, 30)).Contains(new Vector2(treeX,treeZ)))
+            {
+                treeX = UnityEngine.Random.Range(0, chunkSize * mapSize);
+                treeZ = UnityEngine.Random.Range(0, -chunkSize * mapSize);
+            }
             //Check if inside town and spawn tree
             RaycastHit hit;
             if (Physics.Raycast(new Vector3(treeX, 1000, treeZ), Vector3.down, out hit))
@@ -437,7 +394,7 @@ public class MapGenerator : MonoBehaviour
                         fire.transform.localScale = new Vector3(2, 2, 2);
                         fires.Add(fire);
                     }
-
+                   
                     //Check if tree is burned out
                     if (trees[i].GetComponent<Tree>().fireCycleLoop > rnd.Next(1000, 2000))
                     {
@@ -477,6 +434,14 @@ public class MapGenerator : MonoBehaviour
         for (int i = 0; i < burningTrees.Count; i++)
         {
             burningTrees[i].GetComponent<Tree>().fireCycleLoop++;
+            if (Vector3.Distance(player.transform.position, fires[i].transform.position) > drawDistance && !burntTrees.Contains(trees[i]))
+            {
+                fires[i].SetActive(false);
+            }
+            else
+            {
+                fires[i].SetActive(true);
+            }
         }
     }
     //Check if a object is inside a rect CORNER ALLIGNED DEPRECATED : USE .Contains INSTEAD
@@ -504,7 +469,55 @@ public class MapGenerator : MonoBehaviour
         }
         else return false;
     }
+
+    public async Task DrawChunk(int chunkX, int chunkY, float[,] globalNoiseMap)
+    {
+        //Create the chunk gameobject, place it, and name it
+        chunks[chunkX, chunkY] = new GameObject();
+        chunks[chunkX, chunkY].transform.position = new Vector3(chunkX * (chunkSize), 0, -(chunkY * (chunkSize)));
+        chunks[chunkX, chunkY].gameObject.name = "Chunk " + chunkX + " , " + chunkY;
+
+        //Create a localnoisemap making sure to get the extra 1 tile to account for 10 verticies and 9 tiles
+        float[,] localNoiseMap = new float[chunkSize + 1, chunkSize + 1];
+
+        //Retrieve chunk from globalnoisemap and set it to localnoisemap (less than or equal to making sure to have the extra 1 tile)
+        for (int y = 0; y < localNoiseMap.GetLength(0); y++)
+        {
+            for (int x = 0; x < localNoiseMap.GetLength(1); x++)
+            {
+                localNoiseMap[x, y] = globalNoiseMap[x + (chunkSize * chunkX), y + (chunkSize * chunkY)];
+            }
+        }
+        MapData mapData = GenerateMapData(localNoiseMap);
+        //Add components
+
+        if (chunks[chunkX, chunkY].GetComponent<MeshFilter>() == null)
+        {
+            chunks[chunkX, chunkY].AddComponent<MeshFilter>();
+        }
+        display.meshFilter[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshFilter>();
+        if (chunks[chunkX, chunkY].GetComponent<MeshRenderer>() == null)
+        {
+            chunks[chunkX, chunkY].AddComponent<MeshRenderer>();
+        }
+        display.MeshRenderer[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshRenderer>();
+
+        if (chunks[chunkX, chunkY].GetComponent<MeshCollider>() == null)
+        {
+            chunks[chunkX, chunkY].AddComponent<MeshCollider>();
+        }
+
+        display.meshCollider[chunkX, chunkY] = chunks[chunkX, chunkY].GetComponent<MeshCollider>();
+        display.MeshRenderer[chunkX, chunkY].sharedMaterial = terrainMat;
+
+        //Finially draw the mesh
+        MeshData meshData = MeshGen.GenerateTerrainMesh(localNoiseMap, meshHeightMultiplier, meshHeightCurve, 0, true);
+        display.DrawMesh(meshData, chunkX, chunkY);
+
+
+    }
 }
+
 
 //Storage class for terrain data
 [System.Serializable]
