@@ -1202,8 +1202,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   treePrefab: {fileID: 2306728885231731648, guid: 3a7fa33a36b8dae44ba3c439dfa1b7ef, type: 3}
-  mapSize: 50
-  chunkSize: 30
+  mapSize: 20
+  chunkSize: 60
   trees: []
   burningTrees: []
   burntTrees: []
@@ -1234,17 +1234,26 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0.032814175
       value: 0.00010961294
-      inSlope: 1.0334165
-      outSlope: 1.0334165
+      inSlope: 0.59348154
+      outSlope: 0.59348154
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
+      time: 0.49882397
+      value: 0.27667782
+      inSlope: 1.975181
+      outSlope: 1.975181
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.0683935
+    - serializedVersion: 3
       time: 1.0004635
       value: 1.0000944
-      inSlope: 1.0334165
-      outSlope: 1.0334165
+      inSlope: 1.4421045
+      outSlope: 1.4421045
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
