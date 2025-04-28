@@ -50,6 +50,8 @@ public class Helicopter : MonoBehaviour
     public GameObject citizenPrefab;
     public float fuel;
     public float fuelEfficency;
+    public GameObject explosionPrefab;
+    bool crashed;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -135,7 +137,13 @@ public class Helicopter : MonoBehaviour
         }
         if (heliCollider.touchingObj != null)
         {
-            if (heliCollider.touchingObj.name == "helipad")
+            if((xAngle > 0 || zAngle > 0) && crashed == false)
+            {
+                fuel = 0;
+                crashed = true;
+                Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            } 
+            if (heliCollider.touchingObj.name == "helipad" && heliCollider.touchingObj.GetComponent<Helipad>().hospital)
             {
                 for (int i = 0; i < capacity; i++)
                 {
@@ -154,6 +162,10 @@ public class Helicopter : MonoBehaviour
                     citizen.alreadyOnHeli = true;
                 }
                 capacity = 0;
+            }
+            if(heliCollider.touchingObj.name == "helipad" && heliCollider.touchingObj.GetComponent<Helipad>().gasStation)
+            {
+                fuel += 0.1f;
             }
         }
         touching = heliCollider.touching;

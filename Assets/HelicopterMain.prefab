@@ -346,6 +346,7 @@ MonoBehaviour:
   citizenPrefab: {fileID: 5324021099022924450, guid: 97987d0483c022b4d9b1a431e202ed3a, type: 3}
   fuel: 10000
   fuelEfficency: 0
+  explosionPrefab: {fileID: 1753776141928924, guid: 045d5fbbf8161ea478959fe3c8e41207, type: 3}
 --- !u!114 &482442506198664257
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -13,6 +13,17 @@ using NUnit.Framework.Constraints;
 using UnityEngine.AI;
 using System.Threading.Tasks;
 
+public class Helipad : MonoBehaviour
+{
+    public GameObject helipad;
+    public float helipadNoiseHeight;
+    public Vector3 position;
+    public bool fireStation;
+    public bool gasStation;
+    public bool hospital;
+    public bool containerPickupPoint;
+}
+
 public class MapGenerator : MonoBehaviour
 {
     public GameObject treePrefab;
@@ -30,7 +41,6 @@ public class MapGenerator : MonoBehaviour
     public GameObject firePrefab;
     public GameObject citizenPrefab;
     public GameObject heliPadPrefab;
-    float helipadNoiseHeight;
     public GameObject helicopterPrefab;
     public UIController UIController;
     public Sprite townIcon;
@@ -51,6 +61,11 @@ public class MapGenerator : MonoBehaviour
     public float drawDistance;
     public int chunkDrawDistance;
     public NavMeshSurface navSurface;
+    public List<Helipad> helipads = new List<Helipad>();
+    public GameObject fireStationPrefab;
+    public GameObject hospitalPrefab;
+    public GameObject gasStationPrefab;
+    public GameObject containerPickupPointPrefab;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Start()
@@ -61,16 +76,45 @@ public class MapGenerator : MonoBehaviour
         display.meshFilter = new MeshFilter[mapSize, mapSize];
         display.MeshRenderer = new MeshRenderer[mapSize, mapSize];
         display.meshCollider = new MeshCollider[mapSize, mapSize];
-        display.navMeshSurfaces = new NavMeshSurface[mapSize, mapSize];
+        int helipadsCount = rnd.Next(2, 4);
+        int spawnHelipad = rnd.Next(1, helipadsCount);
+        for (int i = 0; i < helipadsCount; i++)
+        {
 
-        //Spawn helicopter & helipad
-        GameObject helipad = Instantiate(heliPadPrefab, new Vector3(UnityEngine.Random.Range(0, mapSize * chunkSize), -1, UnityEngine.Random.Range(0, -mapSize * chunkSize)), Quaternion.identity);
-        player = Instantiate(helicopterPrefab, new Vector3(helipad.transform.position.x, .85f, helipad.transform.position.z), Quaternion.identity);
+            //Spawn helicopter & helipad
+            GameObject helipad = Instantiate(heliPadPrefab, new Vector3(UnityEngine.Random.Range(0, mapSize * chunkSize), 0, UnityEngine.Random.Range(0, -mapSize * chunkSize)), Quaternion.identity);
+            Helipad helipadSettings = helipad.AddComponent<Helipad>();
+            helipadSettings.position = helipad.transform.position;
+            if (spawnHelipad == i)
+            {
+                Debug.Log("Spawned heli");
+                player = Instantiate(helicopterPrefab, new Vector3(helipad.transform.position.x, .85f, helipad.transform.position.z), Quaternion.identity);
+            }
+            if (rnd.Next(0, 2) == 1)
+            {
+                helipadSettings.fireStation = true;
+            }
+            if (rnd.Next(0, 2) == 1)
+            {
+                helipadSettings.gasStation = true;
+            }
+            if (rnd.Next(0, 2) == 1)
+            {
+                helipadSettings.hospital = true;
+            }
+            if (rnd.Next(0, 2) == 1)
+            {
+                helipadSettings.containerPickupPoint = true;
+            }
 
-        //Assign compass markers to the helipad
-        Marker helipadCompassMarker = helipad.AddComponent<Marker>();
-        helipadCompassMarker.icon = helipadIcon;
-        UIController.AddMarker(helipadCompassMarker);
+            //Assign compass markers to the helipad
+            Marker helipadCompassMarker = helipad.AddComponent<Marker>();
+            helipadCompassMarker.icon = helipadIcon;
+            UIController.AddMarker(helipadCompassMarker);
+            helipadSettings.helipad = helipad;
+            helipads.Add(helipadSettings);
+        }
+
 
         //Pick number of towns
         int townCount = rnd.Next(1, 4);
@@ -102,8 +146,8 @@ public class MapGenerator : MonoBehaviour
             town.townPickupPoint.x = rnd.Next(Mathf.RoundToInt(town.town.x - 30), Mathf.RoundToInt(town.town.width + town.town.x + 30));
             town.townPickupPoint.y = rnd.Next(Mathf.RoundToInt((town.town.y - 30)), Mathf.RoundToInt(town.town.height + town.town.y + 30));
             town.townPickupPoint.width = rnd.Next(5, 7);
-            town.townPickupPoint.height = rnd.Next(5,7);
-           
+            town.townPickupPoint.height = rnd.Next(5, 7);
+
 
 
             //Pick number of citizens
@@ -136,20 +180,25 @@ public class MapGenerator : MonoBehaviour
                 Vector2 percent = new Vector2((float)x, (float)y);
                 //Debug.Log(vertices[vertexIndex]);
                 //Debug.DrawRay(vertices[vertexIndex], Vector3.up, Color.red, 10000);
-                if (new Rect(new Vector2(helipad.transform.position.x - 15, helipad.transform.position.z - 15), new Vector2(30,30)).Contains(new Vector2(percent.x, -percent.y)))
+                for (int h = 0; h < helipadsCount; h++)
                 {
-                    //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
-                    if (helipadNoiseHeight == 0)
+                    if (new Rect(new Vector2(helipads[h].position.x - 15, helipads[h].position.z - 15), new Vector2(30, 30)).Contains(new Vector2(percent.x, -percent.y)))
                     {
-                        helipad.transform.position = new Vector3(helipad.transform.position.x, meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier, helipad.transform.position.z);
-                        helipadNoiseHeight = globalNoiseMap[x, y];
-                        player.transform.position = new Vector3(player.transform.position.x, helipad.transform.position.y + 1, player.transform.position.z);
-                    }
-                    else
-                    {
-                        globalNoiseMap[x, y] = helipadNoiseHeight;
+                        //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
+                        if (helipads[h].helipadNoiseHeight == 0)
+                        {
+                            helipads[h].position = new Vector3(helipads[h].position.x, meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier, helipads[h].position.z);
+                            helipads[h].helipad.transform.position = helipads[h].position;
+                            helipads[h].helipadNoiseHeight = globalNoiseMap[x, y];
+                            player.transform.position = new Vector3(player.transform.position.x, helipads[h].position.y + 1, player.transform.position.z);
+                        }
+                        else
+                        {
+                            globalNoiseMap[x, y] = helipads[h].helipadNoiseHeight;
+                        }
                     }
                 }
+
                 for (int t = 0; t < towns.Count; t++)
                 {
                     if (new Rect(new Vector2(towns[t].town.x, towns[t].town.y), new Vector2(towns[t].town.width + 1, towns[t].town.height + 1)).Contains(new Vector2(percent.x, -percent.y)))
@@ -210,12 +259,15 @@ public class MapGenerator : MonoBehaviour
             //Assign position
             treeX = UnityEngine.Random.Range(0, chunkSize * mapSize);
             treeZ = UnityEngine.Random.Range(0, -chunkSize * mapSize);
-
-            while(new Rect(new Vector2(helipad.transform.position.x - 15, helipad.transform.position.z - 15), new Vector2(30, 30)).Contains(new Vector2(treeX,treeZ)))
+            for (int h = 0; h < helipadsCount; h++)
             {
-                treeX = UnityEngine.Random.Range(0, chunkSize * mapSize);
-                treeZ = UnityEngine.Random.Range(0, -chunkSize * mapSize);
+                while (new Rect(new Vector2(helipads[h].position.x - 15, helipads[h].position.z - 15), new Vector2(30, 30)).Contains(new Vector2(treeX, treeZ)))
+                {
+                    treeX = UnityEngine.Random.Range(0, chunkSize * mapSize);
+                    treeZ = UnityEngine.Random.Range(0, -chunkSize * mapSize);
+                }
             }
+
             //Check if inside town and spawn tree
             RaycastHit hit;
             if (Physics.Raycast(new Vector3(treeX, 1000, treeZ), Vector3.down, out hit))
@@ -231,7 +283,25 @@ public class MapGenerator : MonoBehaviour
             }
 
         }
-        
+        for (int i = 0; i < helipadsCount; i++)
+        {
+            if (helipads[i].fireStation)
+            {
+                Instantiate(fireStationPrefab, new Vector3(helipads[i].position.x, helipads[i].position.y, helipads[i].position.z - heliPadPrefab.transform.lossyScale.z - fireStationPrefab.transform.lossyScale.z), Quaternion.identity);
+            }
+            if (helipads[i].gasStation)
+            {
+                Instantiate(gasStationPrefab, new Vector3(helipads[i].position.x + heliPadPrefab.transform.lossyScale.x + fireStationPrefab.transform.lossyScale.x, helipads[i].position.y, helipads[i].position.z), Quaternion.identity);
+            }
+            if (helipads[i].hospital)
+            {
+                Instantiate(hospitalPrefab, new Vector3(helipads[i].position.x, helipads[i].position.y, helipads[i].position.z + heliPadPrefab.transform.lossyScale.z + hospitalPrefab.transform.lossyScale.z), Quaternion.identity);
+            }
+            if (helipads[i].containerPickupPoint)
+            {
+                Instantiate(containerPickupPointPrefab, new Vector3(helipads[i].position.x - heliPadPrefab.transform.lossyScale.x - containerPickupPointPrefab.transform.lossyScale.x, helipads[i].position.y, helipads[i].position.z), Quaternion.identity);
+            }
+        }
         
         //Create fires
         for (int i = 0; i < rnd.Next(1, 5); i++)

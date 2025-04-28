@@ -1216,7 +1216,7 @@ MonoBehaviour:
   fireAreas: []
   firePrefab: {fileID: 1053203839010120, guid: a9f3cc968bdb1cd4d800ee747b078afc, type: 3}
   citizenPrefab: {fileID: 5324021099022924450, guid: 97987d0483c022b4d9b1a431e202ed3a, type: 3}
-  heliPadPrefab: {fileID: 9078858573046112327, guid: a394fc44eaf160249ab6bce366fe2732, type: 3}
+  heliPadPrefab: {fileID: 6424175451788558647, guid: a12bbb7d443870148a7a17a4c4928240, type: 3}
   helicopterPrefab: {fileID: 6267809139607738707, guid: 310da415c2da97a47939dccaa704dc3c, type: 3}
   UIController: {fileID: 1540304160}
   townIcon: {fileID: 21300000, guid: 50b6312126cc888408f9e2ff94760599, type: 3}
@@ -1260,6 +1260,11 @@ MonoBehaviour:
   drawDistance: 15
   chunkDrawDistance: 100
   navSurface: {fileID: 0}
+  helipads: []
+  fireStationPrefab: {fileID: 1274708340679750457, guid: e18e1e8d6499cdb47946507bf0fa3199, type: 3}
+  hospitalPrefab: {fileID: 7685268369218397631, guid: c321869d19773ea4991705fb8711a5d2, type: 3}
+  gasStationPrefab: {fileID: 4834956773783448418, guid: 8cbff44b5a079a849a9d5d38f708606d, type: 3}
+  containerPickupPointPrefab: {fileID: 2810763919065899249, guid: f916a25c1b9df7d4698eee59a1a011b8, type: 3}
 --- !u!4 &1256976547
 Transform:
   m_ObjectHideFlags: 0

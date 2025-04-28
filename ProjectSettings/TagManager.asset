@@ -10,6 +10,7 @@ TagManager:
   - Hospital Door
   - FxTemporaire
   - Helicopter
+  - Fire station door
   layers:
   - Default
   - TransparentFX
