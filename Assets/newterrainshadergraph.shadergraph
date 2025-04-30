@@ -218,6 +218,9 @@
         },
         {
             "m_Id": "77e1f8fb43634f7ba3b8a2b7ed12e4d7"
+        },
+        {
+            "m_Id": "52bd8dd100f04f56be35c5d2cc11832f"
         }
     ],
     "m_GroupDatas": [
@@ -535,6 +538,20 @@
                     "m_Id": "2550b5edfe4849a88ce5eeb03fbbca58"
                 },
                 "m_SlotId": 2
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "52bd8dd100f04f56be35c5d2cc11832f"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "685bad160a144040958e0a7ada202b86"
+                },
+                "m_SlotId": 1
             }
         },
         {
@@ -862,20 +879,6 @@
         {
             "m_OutputSlot": {
                 "m_Node": {
-                    "m_Id": "a8b9b47fbd4e4b2a815c5667ed9f733b"
-                },
-                "m_SlotId": 0
-            },
-            "m_InputSlot": {
-                "m_Node": {
-                    "m_Id": "a113ea52a58044eab15a8f44802750ea"
-                },
-                "m_SlotId": 1
-            }
-        },
-        {
-            "m_OutputSlot": {
-                "m_Node": {
                     "m_Id": "b1cddce1dba34067bf9686eaf9cb60eb"
                 },
                 "m_SlotId": 2
@@ -896,7 +899,7 @@
             },
             "m_InputSlot": {
                 "m_Node": {
-                    "m_Id": "685bad160a144040958e0a7ada202b86"
+                    "m_Id": "a113ea52a58044eab15a8f44802750ea"
                 },
                 "m_SlotId": 1
             }
@@ -1318,7 +1321,7 @@
     "m_ObjectId": "03816dc50de64fa1a2f1d349eab2f8a1",
     "m_Title": "Grass Ligh",
     "m_Position": {
-        "x": -1314.9998779296875,
+        "x": -1315.0,
         "y": -1028.0
     }
 }
@@ -2344,7 +2347,7 @@
     "m_ObjectId": "2ea4cea753df4a5990af9a725139299e",
     "m_Title": "Mountain Dark",
     "m_Position": {
-        "x": -1503.9998779296875,
+        "x": -1504.0,
         "y": -2609.0
     }
 }
@@ -2493,7 +2496,7 @@
     "m_ObjectId": "328ff08ebd1f47fbbdd01d059a372304",
     "m_Title": "Medium To Dark Grass",
     "m_Position": {
-        "x": -837.0006713867188,
+        "x": -862.0,
         "y": -1396.0
     }
 }
@@ -2590,10 +2593,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -856.9996948242188,
-            "y": -2739.0,
-            "width": 183.99981689453126,
-            "height": 33.999755859375
+            "x": -889.0,
+            "y": -2710.999755859375,
+            "width": 184.0,
+            "height": 34.0
         }
     },
     "m_Slots": [
@@ -2711,7 +2714,7 @@
     "m_Title": "Grass Dark",
     "m_Position": {
         "x": -1389.0,
-        "y": -1999.9998779296875
+        "y": -2000.0
     }
 }
 
@@ -3125,6 +3128,42 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
+    "m_ObjectId": "52bd8dd100f04f56be35c5d2cc11832f",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "Property",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": -720.2850341796875,
+            "y": -809.913330078125,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "ae1b710d30754011a075c793505a4226"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_DismissedVersion": 0,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_Property": {
+        "m_Id": "015eb584a20c46eab0b3e0615c415459"
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicVectorMaterialSlot",
     "m_ObjectId": "53eb95e8525a4342ba27d273f0207d11",
     "m_Id": 0,
@@ -3440,7 +3479,7 @@
     "m_Title": "Light Mountain To Snow",
     "m_Position": {
         "x": -952.0,
-        "y": -3631.999755859375
+        "y": -3632.0
     }
 }
 
@@ -3615,7 +3654,7 @@
     "m_ObjectId": "6bd26aafe6ea4c5a8e501bf70eb6e584",
     "m_Title": "Snow",
     "m_Position": {
-        "x": -1430.9998779296875,
+        "x": -1431.0,
         "y": -3790.0
     }
 }
@@ -3892,10 +3931,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -818.0001831054688,
-            "y": -520.9999389648438,
-            "width": 181.00115966796876,
-            "height": 33.9998779296875
+            "x": -822.0,
+            "y": -521.0,
+            "width": 181.0,
+            "height": 34.000030517578128
         }
     },
     "m_Slots": [
@@ -3943,10 +3982,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -807.0001831054688,
-            "y": -592.0001220703125,
-            "width": 166.0001220703125,
-            "height": 34.000244140625
+            "x": -822.0,
+            "y": -555.0,
+            "width": 166.0,
+            "height": 34.0
         }
     },
     "m_Slots": [
@@ -4600,7 +4639,7 @@
     "m_Title": "Dark Mountain To Light Mountain",
     "m_Position": {
         "x": -944.0,
-        "y": -2932.0
+        "y": -2931.999755859375
     }
 }
 
@@ -4640,8 +4679,8 @@
     "m_ObjectId": "9d219495e94847c5b30f7b2f8c86b6a6",
     "m_Title": "Grass Medium",
     "m_Position": {
-        "x": -1320.0001220703125,
-        "y": -500.9999694824219
+        "x": -1320.0,
+        "y": -501.0
     }
 }
 
@@ -4839,10 +4878,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -758.0003662109375,
-            "y": -203.9999542236328,
-            "width": 166.0001220703125,
-            "height": 33.9998779296875
+            "x": -18.000076293945314,
+            "y": -272.0000305175781,
+            "width": 166.00001525878907,
+            "height": 33.99998474121094
         }
     },
     "m_Slots": [
@@ -4938,6 +4977,21 @@
         "x": 0.0,
         "y": 1.0
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "ae1b710d30754011a075c793505a4226",
+    "m_Id": 0,
+    "m_DisplayName": "GrassDarkHeight",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Out",
+    "m_StageCapability": 3,
+    "m_Value": 0.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": []
 }
 
 {
@@ -5404,10 +5458,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -736.0003662109375,
-            "y": -887.0000610351563,
-            "width": 181.00115966796876,
-            "height": 34.000244140625
+            "x": -837.0,
+            "y": -153.0,
+            "width": 181.0,
+            "height": 34.0
         }
     },
     "m_Slots": [
@@ -6863,8 +6917,8 @@
     "m_ObjectId": "fd299636eb6e44b2b164e6cb58102b51",
     "m_Title": "Light To Medium Grass",
     "m_Position": {
-        "x": -843.0014038085938,
-        "y": -714.0
+        "x": -847.0,
+        "y": -714.0000610351563
     }
 }
 
