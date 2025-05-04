@@ -51,6 +51,7 @@ public class Citizen : MonoBehaviour
                         Debug.Log("A citizen died in a fire");
                         helicopter.citizensDiedInFire++;
                         Fire_Spread.towns[townIndex].townCitizenCount--;
+                        Fire_Spread.towns[townIndex].townDeadCitizenCount++;
                         Destroy(this.gameObject);
                     }
                 }
@@ -83,13 +84,15 @@ public class Citizen : MonoBehaviour
             {
                 helicopter.capacity++;
                 Fire_Spread.towns[townIndex].townCitizenCount--;
+                Fire_Spread.towns[townIndex].townPickedUpCitizenCount++;
                 Destroy(this.gameObject);
             }
-            else if (touchingHeli && !helicopter.touching)
+            else if (touchingHeli && helicopter.heliCollider.touchingObj == this.gameObject)
             {
                 Debug.Log("You killed a citizen!");
                 helicopter.citizensKilled++;
                 Fire_Spread.towns[townIndex].townCitizenCount--;
+                Fire_Spread.towns[townIndex].townDeadCitizenCount++;
                 Destroy(this.gameObject);
             }
         }
@@ -104,6 +107,7 @@ public class Citizen : MonoBehaviour
                         Debug.Log("A citizen died in a fire");
                         helicopter.citizensDiedInFire++;
                         MapGenerator.towns[townIndex].townCitizenCount--;
+                        MapGenerator.towns[townIndex].townDeadCitizenCount++;
                         Destroy(this.gameObject);
                     }
                 }
@@ -136,13 +140,16 @@ public class Citizen : MonoBehaviour
             {
                 helicopter.capacity++;
                 MapGenerator.towns[townIndex].townCitizenCount--;
+                MapGenerator.towns[townIndex].townPickedUpCitizenCount++;
                 Destroy(this.gameObject);
             }
-            else if (touchingHeli && !helicopter.touching)
+            else if (touchingHeli && helicopter.heliCollider.touchingObj == this.gameObject)
             {
                 Debug.Log("You killed a citizen!");
                 helicopter.citizensKilled++;
                 MapGenerator.towns[townIndex].townCitizenCount--;
+                MapGenerator.towns[townIndex].townDeadCitizenCount++;
+                
                 Destroy(this.gameObject);
             }
         }

@@ -10,6 +10,8 @@ public class Town
     public List<GameObject> houses;
     public Rect townPickupPoint;
     public int townCitizenCount;
+    public int townDeadCitizenCount;
+    public int townPickedUpCitizenCount;
     public float townHeight;
     public float townNoiseHeight;
     public float townPickupPointHeight;

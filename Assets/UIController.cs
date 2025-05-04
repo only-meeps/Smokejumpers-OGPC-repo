@@ -22,11 +22,13 @@ public class UIController : MonoBehaviour
     void Start()
     {
         helicopter = GameObject.FindObjectsByType<Helicopter>(FindObjectsSortMode.None)[0];
+
+
         compassUnit = compass.rectTransform.rect.width / 360f;
         heli = GameObject.FindFirstObjectByType<HeliCollider>();
         fuelDisplay.maxValue = helicopter.fuel;
         capacityDisplay.maxValue = helicopter.maxCapacity;
-        fuelEfficencyDisplay.maxValue = 1.5f;
+        fuelEfficencyDisplay.maxValue = 4f;
     }
 
     // Update is called once per frame

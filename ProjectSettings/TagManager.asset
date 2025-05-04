@@ -11,6 +11,12 @@ TagManager:
   - FxTemporaire
   - Helicopter
   - Fire station door
+  - FireStation
+  - Hospital
+  - ContainerPickupPoint
+  - GasStation
+  - CitizenPickupPoint
+  - helipad
   layers:
   - Default
   - TransparentFX
