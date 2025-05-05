@@ -171,6 +171,15 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Restart"",
+                    ""type"": ""Button"",
+                    ""id"": ""be0d5257-4996-4375-b182-edc7bbb19332"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -243,7 +252,7 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""1aefdf53-69b0-4ecf-944f-4011a36bda9f"",
-                    ""path"": ""<Keyboard>/leftShift"",
+                    ""path"": ""<Keyboard>/shift"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -254,7 +263,7 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""2e055bf0-afbc-48d0-8205-d9758ba21ff6"",
-                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""path"": ""<Keyboard>/ctrl"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -270,6 +279,17 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""On/Off_Engine_Toggle"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""95117a58-6f84-44ff-a640-86d6c6054d92"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Restart"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -289,6 +309,7 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
         m_General_Up = m_General.FindAction("Up", throwIfNotFound: true);
         m_General_Down = m_General.FindAction("Down", throwIfNotFound: true);
         m_General_OnOff_Engine_Toggle = m_General.FindAction("On/Off_Engine_Toggle", throwIfNotFound: true);
+        m_General_Restart = m_General.FindAction("Restart", throwIfNotFound: true);
     }
 
     ~@HelicopterMovement()
@@ -378,6 +399,7 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
     private readonly InputAction m_General_Up;
     private readonly InputAction m_General_Down;
     private readonly InputAction m_General_OnOff_Engine_Toggle;
+    private readonly InputAction m_General_Restart;
     /// <summary>
     /// Provides access to input actions defined in input action map "General".
     /// </summary>
@@ -425,6 +447,10 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "General/OnOff_Engine_Toggle".
         /// </summary>
         public InputAction @OnOff_Engine_Toggle => m_Wrapper.m_General_OnOff_Engine_Toggle;
+        /// <summary>
+        /// Provides access to the underlying input action "General/Restart".
+        /// </summary>
+        public InputAction @Restart => m_Wrapper.m_General_Restart;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -478,6 +504,9 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
             @OnOff_Engine_Toggle.started += instance.OnOnOff_Engine_Toggle;
             @OnOff_Engine_Toggle.performed += instance.OnOnOff_Engine_Toggle;
             @OnOff_Engine_Toggle.canceled += instance.OnOnOff_Engine_Toggle;
+            @Restart.started += instance.OnRestart;
+            @Restart.performed += instance.OnRestart;
+            @Restart.canceled += instance.OnRestart;
         }
 
         /// <summary>
@@ -516,6 +545,9 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
             @OnOff_Engine_Toggle.started -= instance.OnOnOff_Engine_Toggle;
             @OnOff_Engine_Toggle.performed -= instance.OnOnOff_Engine_Toggle;
             @OnOff_Engine_Toggle.canceled -= instance.OnOnOff_Engine_Toggle;
+            @Restart.started -= instance.OnRestart;
+            @Restart.performed -= instance.OnRestart;
+            @Restart.canceled -= instance.OnRestart;
         }
 
         /// <summary>
@@ -619,5 +651,12 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnOnOff_Engine_Toggle(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Restart" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRestart(InputAction.CallbackContext context);
     }
 }

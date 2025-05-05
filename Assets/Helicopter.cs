@@ -12,6 +12,7 @@ using UnityEditor;
 public class Helicopter : MonoBehaviour
 {
     public InputActionAsset inputActions;
+    public Vector3 spawnPoint;
     public HelicopterMovement inputs;
     private InputAction tiltF;
     private InputAction tiltB;
@@ -22,6 +23,7 @@ public class Helicopter : MonoBehaviour
     private InputAction up;
     private InputAction down;
     private InputAction engineToggle;
+    private InputAction restart;
     public Rigidbody rb;
     public float tiltLimiter;
     public float tiltSpeed;
@@ -59,7 +61,11 @@ public class Helicopter : MonoBehaviour
     public AudioSource heliAudioSource;
     float initialFuel;
     public MapGenerator mapGenerator;
-    
+    private int helicopterRespawnLimiter;
+    public AudioClip fuelWarningSound;
+    public AudioClip roterSounds;
+    public AudioSource roterSoundSource;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -75,9 +81,14 @@ public class Helicopter : MonoBehaviour
         rotateL = inputs.General.RotateL;
         up = inputs.General.Up;
         down = inputs.General.Down;
+        restart = inputs.General.Restart;
         
         cinemachineCam = Instantiate(cameraPrefab).GetComponent<CinemachineCamera>();
         cinemachineCam.Follow = transform;
+
+        roterSoundSource.clip = roterSounds;
+        roterSoundSource.loop = true;
+        roterSoundSource.Play();
 
         mapGenerator = FindFirstObjectByType<MapGenerator>();
         startingRot = new Quaternion(0,0,0,0);
@@ -87,6 +98,7 @@ public class Helicopter : MonoBehaviour
     public void OnEnable()
     {
         inputs.General.Enable();
+        restart.Enable();
         engineToggle.Enable();
         tiltF.Enable();
         tiltB.Enable();
@@ -100,6 +112,7 @@ public class Helicopter : MonoBehaviour
     public void OnDisable()
     {
         inputs.General.Disable();
+        restart.Disable();
         engineToggle.Disable();
         tiltF.Disable();
         tiltB.Disable();
@@ -114,6 +127,37 @@ public class Helicopter : MonoBehaviour
     // Update is called once per frame
     public void FixedUpdate()
     {
+
+        helicopterRespawnLimiter++;
+        touching = heliCollider.touching;
+        //Debug.Log("tiltF : " + tiltF.IsPressed() + " tiltB : " + tiltB.IsPressed() + " tiltR : " + tiltR.IsPressed() + " tiltL : " + tiltL.IsPressed() + " Helicollider.touching : " + touching);
+        if (touching)
+        {
+            if ((tiltF.IsPressed() || tiltB.IsPressed() || tiltR.IsPressed() || tiltL.IsPressed() || rotateL.IsPressed() || rotateR.IsPressed()) && crashed == false)
+            {
+                Crash();
+            }
+            if (heliCollider.touchingObj.tag == "helipad" && heliCollider.touchingObj.GetComponent<Helipad>().hospital)
+            {
+                for (int i = 0; i < capacity; i++)
+                {
+                    System.Random rnd = new System.Random();
+                    Citizen citizen = Instantiate(citizenPrefab, entrances[rnd.Next(0, entrances.Count)].transform.position, Quaternion.identity).GetComponent<Citizen>();
+                    Vector3 closestHospitalDoor = new Vector3();
+                    for (int j = 0; j < GameObject.FindGameObjectsWithTag("Hospital Door").Length; j++)
+                    {
+                        if (Vector3.Distance(closestHospitalDoor, citizen.transform.position) > Vector3.Distance(GameObject.FindGameObjectsWithTag("Hospital Door")[j].transform.position, citizen.transform.position))
+                        {
+                            closestHospitalDoor = GameObject.FindGameObjectsWithTag("Hospital Door")[j].transform.position;
+
+                        }
+                    }
+                    citizen.manuallyAssignedTarget = closestHospitalDoor;
+                    citizen.alreadyOnHeli = true;
+                }
+                capacity = 0;
+            }
+        }
         if (transform.eulerAngles.x > 180)
         {
             xAngle = (transform.eulerAngles.x - 360);
@@ -159,30 +203,6 @@ public class Helicopter : MonoBehaviour
             fuel += 2;
         }
         */
-        citizensLeft = GameObject.FindGameObjectsWithTag("Citizen").Length;
-        if(citizensLeft == 0)
-        {
-            if(citizensDiedInFire == 0 && citizensKilled == 0)
-            {
-                Debug.Log("You finished the map with a perfect score of " + citizensRescued * 100);
-            }
-            else if(citizensKilled > 0 && citizensDiedInFire == 0)
-            {
-                Debug.Log("You finished the map with a score of " + ((citizensRescued * 100) - (citizensDiedInFire * 50) - (citizensKilled * 200)) + ". You rescued " + citizensRescued + " citizens, and killed " + citizensKilled + " citizens");
-            }
-            else if(citizensDiedInFire > 0 && citizensKilled == 0)
-            {
-                Debug.Log("You finished the map with a score of " + ((citizensRescued * 100) - (citizensDiedInFire * 50) - (citizensKilled * 200)) + ". You rescued " + citizensRescued + " and unfortunatly missed " + citizensDiedInFire + " citizens who died in a fire");
-            }
-            else if(citizensKilled == 0 && citizensRescued == 0 && citizensDiedInFire > 0)
-            {
-                Debug.Log("Are you actually going to play the game?");
-            }
-            else
-            {
-                Debug.Log("You finished the map with a score of " + ((citizensRescued * 100) - (citizensDiedInFire * 50) - (citizensKilled * 200)) + ". You rescued " + citizensRescued + " citizens, killed " + citizensKilled + " citizens and missed " + citizensDiedInFire + " citizens who died in a fire");
-            }        
-        }
 
         if (engineToggle.IsPressed())
         {
@@ -195,7 +215,7 @@ public class Helicopter : MonoBehaviour
                 engineOn = true;
             }
         }
-        Debug.Log(rb.linearVelocity + " " + rb.angularVelocity);
+        //Debug.Log(rb.linearVelocity + " " + rb.angularVelocity);
         //Debug.Log(mapGenerator.playableMapSize.Contains(new Vector2(transform.position.x, transform.position.z), true));
         //Debug.Log(new Vector2(transform.position.x, transform.position.z));
 
@@ -204,10 +224,7 @@ public class Helicopter : MonoBehaviour
 
             if (!heliCollider.touching)
             {
-                if (down.IsPressed())
-                {
-                    rb.MovePosition(new Vector3(rb.position.x, rb.position.y - upDownMultiplier * Time.deltaTime, rb.position.z));
-                }
+
                 if (tiltF.IsPressed() && xAngle <= tiltLimiter)
                 {
                     if (!heliCollider.touching)
@@ -252,6 +269,15 @@ public class Helicopter : MonoBehaviour
                         physicsHeli.transform.Rotate(Vector3.down * rotationSpeedMultiplier * Time.deltaTime);
                     }
                 }
+                if (down.IsPressed())
+                {
+                    rb.MovePosition(new Vector3(rb.position.x, rb.position.y - upDownMultiplier * Time.deltaTime, rb.position.z));
+                }
+            }
+            if (up.IsPressed())
+            {
+                //Debug.Log("up");
+                rb.transform.position = (new Vector3(rb.position.x, rb.position.y + upDownMultiplier * Time.deltaTime, rb.position.z));
             }
 
             if (xAngle > 0)
@@ -326,69 +352,63 @@ public class Helicopter : MonoBehaviour
         {
             fuel -= fuelEfficency;
         }
-        if (up.IsPressed())
-        {
-            Debug.Log("up");
-            rb.MovePosition(new Vector3(rb.position.x, rb.position.y + upDownMultiplier * Time.deltaTime, rb.position.z));
-        }
         if (heliCollider.touching || fuel <= 0)
         {
             rb.useGravity = true;
             //transform.rotation = rb.rotation;
-            if (fuel <= 0)
+            if (fuel <= 0 && heliCollider.touching && crashed == false)
             {
+                
+                Crash();
                 rb.freezeRotation = false;
-                //rb.constraints = RigidbodyConstraints.None;
-                //transform.rotation = rb.rotation;
-                rb.AddExplosionForce(30, new Vector3(transform.position.x + UnityEngine.Random.Range(-2,2), transform.position.y + UnityEngine.Random.Range(-2, 2), transform.position.x + UnityEngine.Random.Range(-2, 2)), 100);
             }
         }
         else
         {
+            rb.angularVelocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             //rb.rotation = new Quaternion(0, rb.rotation.y, 0, rb.rotation.w);
             rb.useGravity = false;
         }
-        
-        rb.angularVelocity = Vector3.zero;
-        rb.linearVelocity = Vector3.zero;
+        if (restart.IsPressed() && helicopterRespawnLimiter > 15)  
+        {
+
+            Debug.Log("Respawn");
+            Respawn();
+        }
+        if(fuel < initialFuel / 4 && crashed == false && heliAudioSource.isPlaying == false)
+        {
+            heliAudioSource.clip = fuelWarningSound;
+            heliAudioSource.loop = true;
+            heliAudioSource.Play();
+        }
 
     }
 
-    public void Update ()
+    public void Respawn()
     {
-        touching = heliCollider.touching;
-        //Debug.Log("tiltF : " + tiltF.IsPressed() + " tiltB : " + tiltB.IsPressed() + " tiltR : " + tiltR.IsPressed() + " tiltL : " + tiltL.IsPressed() + " Helicollider.touching : " + touching);
-        if (touching)
+        roterSoundSource.clip = roterSounds;
+        roterSoundSource.loop = true;
+        roterSoundSource.Play();
+        rb.angularVelocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
+        for (int i = 0; i < gameObject.GetComponentsInChildren<MeshRenderer>().Length; i++)
         {
-            if ((tiltF.IsPressed() || tiltB.IsPressed() || tiltR.IsPressed() || tiltL.IsPressed() || rotateL.IsPressed() || rotateR.IsPressed()) && crashed == false)
-            {
-                Crash();
-            }
-            if (heliCollider.touchingObj.tag == "helipad" && heliCollider.touchingObj.GetComponent<Helipad>().hospital)
-            {
-                for (int i = 0; i < capacity; i++)
-                {
-                    System.Random rnd = new System.Random();
-                    Citizen citizen = Instantiate(citizenPrefab, entrances[rnd.Next(0, entrances.Count)].transform.position, Quaternion.identity).GetComponent<Citizen>();
-                    Vector3 closestHospitalDoor = new Vector3();
-                    for (int j = 0; j < GameObject.FindGameObjectsWithTag("Hospital Door").Length; j++)
-                    {
-                        if (Vector3.Distance(closestHospitalDoor, citizen.transform.position) > Vector3.Distance(GameObject.FindGameObjectsWithTag("Hospital Door")[j].transform.position, citizen.transform.position))
-                        {
-                            closestHospitalDoor = GameObject.FindGameObjectsWithTag("Hospital Door")[j].transform.position;
-
-                        }
-                    }
-                    citizen.manuallyAssignedTarget = closestHospitalDoor;
-                    citizen.alreadyOnHeli = true;
-                }
-                capacity = 0;
-            }
+            gameObject.GetComponentsInChildren<MeshRenderer>()[i].enabled = true;
         }
+        crashed = false;
+        mapGenerator.timesRespawned++;
+        capacity = 0;
+        fuel = initialFuel;
+        transform.position = spawnPoint;
+        rb.transform.position = spawnPoint;
+        rb.transform.rotation = new Quaternion();
+        transform.rotation = new Quaternion();
     }
 
     void Crash()
     {
+        roterSoundSource.Stop();
         fuel = 0;
         crashed = true;
         capacity = 0;
@@ -402,7 +422,7 @@ public class Helicopter : MonoBehaviour
         {
             gameObject.GetComponentsInChildren<MeshRenderer>()[i].enabled = false;
         }
-
+        heliAudioSource.Stop();
         heliAudioSource.clip = crashSound;
         heliAudioSource.loop = false;
         heliAudioSource.Play();

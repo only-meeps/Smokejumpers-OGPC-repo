@@ -85,6 +85,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Restart",
+                    "type": "Button",
+                    "id": "be0d5257-4996-4375-b182-edc7bbb19332",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -157,7 +166,7 @@
                 {
                     "name": "",
                     "id": "1aefdf53-69b0-4ecf-944f-4011a36bda9f",
-                    "path": "<Keyboard>/leftShift",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -168,7 +177,7 @@
                 {
                     "name": "",
                     "id": "2e055bf0-afbc-48d0-8205-d9758ba21ff6",
-                    "path": "<Keyboard>/leftCtrl",
+                    "path": "<Keyboard>/ctrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -184,6 +193,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "On/Off_Engine_Toggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "95117a58-6f84-44ff-a640-86d6c6054d92",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Restart",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

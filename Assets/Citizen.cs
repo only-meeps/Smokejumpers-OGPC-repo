@@ -161,17 +161,16 @@ public class Citizen : MonoBehaviour
         {
             touchingDoor = true;
         }
-
-    }
-
-    public void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.name == "Hospital door")
+        if (other.gameObject.name == "Hospital door")
         {
             helicopter.citizensRescued++;
             Destroy(this.gameObject);
             touchingHospitalDoor = true;
         }
+    }
+
+    public void OnCollisionStay(Collision collision)
+    {
         Debug.Log(collision.gameObject.name);
         if (collision.gameObject.name == "HelicopterMain")
         {

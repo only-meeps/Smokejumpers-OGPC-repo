@@ -62,6 +62,10 @@ public class MapGenerator : MonoBehaviour
     public GameObject missionPrefab;
     public GameObject missionVerticalLayoutGroup;
     public Rect playableMapSize;
+    public int missionsCompleted;
+    public int citizensKilled;
+    public int citizensDied;
+    public int timesRespawned;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Start()
@@ -106,6 +110,10 @@ public class MapGenerator : MonoBehaviour
         List<Helipad> helipadSettings = new List<Helipad>();
         while(hospitals < 1 ||  gasStations < 1 || ContainerPickupPoints < 1 || FireStations < 1)
         {
+            for( int i = 0; i < helipadSettings.Count; i++)
+            {
+                Destroy(helipadSettings[i].helipad);
+            }
             helipadSettings = new List<Helipad>();
             hospitals = 0;
             gasStations = 0;
@@ -244,12 +252,14 @@ public class MapGenerator : MonoBehaviour
                         {
                             if (globalNoiseMap[x, y] * meshHeightMultiplier <= waterHeight)
                             {
+                                Debug.LogWarning("Helipad is below waterLine");
                                 helipads[h].position = new Vector3(helipads[h].position.x, waterHeight + 1, helipads[h].position.z);
                                 helipads[h].helipad.transform.position = helipads[h].position;
                                 helipads[h].helipadNoiseHeight = (waterHeight + 1) / meshHeightMultiplier;
                                 if (helipads[h].spawnHelipad)
                                 {
                                     player.transform.position = new Vector3(player.transform.position.x, helipads[h].position.y + 2, player.transform.position.z);
+                                    player.GetComponentInChildren<Helicopter>().spawnPoint = player.transform.position;
                                 }
                             }
                             else
@@ -260,6 +270,7 @@ public class MapGenerator : MonoBehaviour
                                 if (helipads[h].spawnHelipad)
                                 {
                                     player.transform.position = new Vector3(player.transform.position.x, helipads[h].position.y + 2, player.transform.position.z);
+                                    player.GetComponentInChildren<Helicopter>().spawnPoint = player.transform.position;
                                 }
                             }
 
@@ -475,6 +486,7 @@ public class MapGenerator : MonoBehaviour
 
                 if(mission.missionTag == "CitizenPickupPoint")
                 {
+                    towns[j].townLinkedMission = mission;
                     GameObject townOBJ = new GameObject();
                     townOBJ.name = "Town " + i;
                     townOBJ.transform.position = new Vector3(towns[j].town.x, 0, towns[j].town.y);
@@ -546,13 +558,16 @@ public class MapGenerator : MonoBehaviour
 
     void Update()
     {
+        
         for(int i = 0; i < towns.Count; i++)
         {
-            if (towns[i].townCitizenCount == 0)
+            if (towns[i].townCitizenCount == 0 && towns[i].townLinkedMission.isActiveAndEnabled)
             {
                 Debug.Log("Mission done");
-                towns[i].townMarker.gameObject.SetActive(false);
-                Destroy(FindFirstObjectByType<Mission>());
+                //towns[i].townMarker.gameObject.SetActive(false);
+                towns[i].townLinkedMission.gameObject.SetActive(false);
+                assaignedMissions.Remove(towns[i].townLinkedMission);
+                missionsCompleted++;
             }
         }
         for(int y = 0; y < chunks.GetLength(1); y++)
@@ -569,7 +584,10 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
-
+        if(assaignedMissions.Count == 0 && player.GetComponentInChildren<Helicopter>().capacity == 0)
+        {
+            StartCoroutine(UIController.Scoring(missionsCompleted ,player.GetComponentInChildren<Helicopter>().citizensKilled, player.GetComponentInChildren<Helicopter>().citizensDiedInFire, timesRespawned));
+        }
         /*
         if(townPosEditor != townPos)
         {

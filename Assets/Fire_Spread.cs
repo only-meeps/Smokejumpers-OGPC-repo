@@ -17,6 +17,7 @@ public class Town
     public float townPickupPointHeight;
     public float townPickupPointNoiseHeight;
     public Marker townMarker;
+    public Mission townLinkedMission;
 }
 
 public class Fire_Spread : MonoBehaviour
