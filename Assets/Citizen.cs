@@ -16,6 +16,7 @@ public class Citizen : MonoBehaviour
     public bool alreadyOnHeli;
     public Vector3 manuallyAssignedTarget;
     public bool usingFireSpread;
+    public Rigidbody rb;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -40,6 +41,8 @@ public class Citizen : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        rb.angularVelocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
         if (usingFireSpread)
         {
             if (!alreadyOnHeli)
@@ -157,15 +160,10 @@ public class Citizen : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log(other.gameObject.tag);
         if (other.gameObject.tag == "Door")
         {
             touchingDoor = true;
-        }
-        if (other.gameObject.name == "Hospital door")
-        {
-            helicopter.citizensRescued++;
-            Destroy(this.gameObject);
-            touchingHospitalDoor = true;
         }
     }
 
@@ -175,6 +173,12 @@ public class Citizen : MonoBehaviour
         if (collision.gameObject.name == "HelicopterMain")
         {
             touchingHeli = true;
+        }
+        if (collision.gameObject.tag == "Hospital door")
+        {
+            helicopter.citizensRescued++;
+            Destroy(this.gameObject);
+            touchingHospitalDoor = true;
         }
     }
     private void OnCollisionExit(Collision collision)

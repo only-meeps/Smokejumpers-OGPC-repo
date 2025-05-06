@@ -59,6 +59,7 @@ public class MapGenerator : MonoBehaviour
     public List<Mission> assaignedMissions = new List<Mission>();
     public GameObject water;
     public float waterHeight;
+    public float waterNoiseHeight;
     public GameObject missionPrefab;
     public GameObject missionVerticalLayoutGroup;
     public Rect playableMapSize;
@@ -68,7 +69,7 @@ public class MapGenerator : MonoBehaviour
     public int timesRespawned;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    async void Start()
+    async void Awake()
     {
         Mission citizenPickupMission = new Mission();
 
@@ -82,17 +83,18 @@ public class MapGenerator : MonoBehaviour
 
         possibleMissions.Add(citizenPickupMission);
 
-        meshHeightMultiplier = rnd.Next(15, 40);
+        meshHeightMultiplier = rnd.Next(24, 40);
         meshHeightCurve = new AnimationCurve();
         meshHeightCurve.AddKey(0, 0);
         meshHeightCurve.AddKey(1, 1);
-        for (int i = 0; i < rnd.Next(1, 5); i++)
+        for (int i = 0; i < rnd.Next(1, 3); i++)
         {
             meshHeightCurve.AddKey(UnityEngine.Random.Range(0, 0.90f), UnityEngine.Random.Range(0, 1));
         }
         playableMapSize = new Rect(new Vector2(0,0), new Vector2((mapSize) * chunkSize, -(mapSize) * chunkSize));
         DrawRect(playableMapSize, 0, townPickupZoneMat, 1, "mapSize", null);
-        waterHeight = UnityEngine.Random.Range(-1, meshHeightMultiplier - 24);
+        waterNoiseHeight = UnityEngine.Random.Range(-.2f, .1f);
+        waterHeight = waterNoiseHeight * meshHeightMultiplier;
         water.transform.position = new Vector3(0, waterHeight, 0);
         water.transform.localScale = new Vector3(mapSize * chunkSize, 1, mapSize * chunkSize);
         navSurface = GameObject.FindFirstObjectByType<NavMeshSurface>();
@@ -123,9 +125,11 @@ public class MapGenerator : MonoBehaviour
             {
 
                 //Spawn helicopter & helipad
-                GameObject helipad = Instantiate(heliPadPrefab, new Vector3(rnd.Next(0, mapSize * chunkSize), 0, rnd.Next(-mapSize * chunkSize, 0)), Quaternion.identity);
+                GameObject helipad = Instantiate(heliPadPrefab, new Vector3(rnd.Next(0, mapSize * chunkSize), waterHeight, rnd.Next(-mapSize * chunkSize, 0)), Quaternion.identity);
+                
                 Debug.Log(i + " " + helipadsCount);
                 Helipad helipadSetting = helipad.GetComponent<Helipad>();
+                helipadSetting.helipadNoiseHeight = waterNoiseHeight;
                 helipadSetting.position = helipad.transform.position;
                 helipadSetting.helipad = helipad;
                 if (spawnHelipad == i)
@@ -248,14 +252,13 @@ public class MapGenerator : MonoBehaviour
                     if (new Rect(new Vector2(helipads[h].position.x - 15, helipads[h].position.z - 15), new Vector2(30, 30)).Contains(new Vector2(percent.x, -percent.y)))
                     {
                         //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
-                        if (helipads[h].helipadNoiseHeight == 0)
+                        if (!helipads[h].setHeight)
                         {
-                            if (globalNoiseMap[x, y] * meshHeightMultiplier <= waterHeight)
+                            helipads[h].setHeight = true;
+                            if (globalNoiseMap[x, y] > waterNoiseHeight)
                             {
-                                Debug.LogWarning("Helipad is below waterLine");
-                                helipads[h].position = new Vector3(helipads[h].position.x, waterHeight + 1, helipads[h].position.z);
+                                helipads[h].position = new Vector3(helipads[h].position.x, (meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier) + 0.1f, helipads[h].position.z);
                                 helipads[h].helipad.transform.position = helipads[h].position;
-                                helipads[h].helipadNoiseHeight = (waterHeight + 1) / meshHeightMultiplier;
                                 if (helipads[h].spawnHelipad)
                                 {
                                     player.transform.position = new Vector3(player.transform.position.x, helipads[h].position.y + 2, player.transform.position.z);
@@ -264,9 +267,6 @@ public class MapGenerator : MonoBehaviour
                             }
                             else
                             {
-                                helipads[h].position = new Vector3(helipads[h].position.x, meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier - 0.2f, helipads[h].position.z);
-                                helipads[h].helipad.transform.position = helipads[h].position;
-                                helipads[h].helipadNoiseHeight = globalNoiseMap[x, y];
                                 if (helipads[h].spawnHelipad)
                                 {
                                     player.transform.position = new Vector3(player.transform.position.x, helipads[h].position.y + 2, player.transform.position.z);
@@ -275,10 +275,7 @@ public class MapGenerator : MonoBehaviour
                             }
 
                         }
-                        else
-                        {
-                            globalNoiseMap[x, y] = helipads[h].helipadNoiseHeight;
-                        }
+                        globalNoiseMap[x, y] = helipads[h].helipadNoiseHeight;
                     }
                 }
 
@@ -289,10 +286,10 @@ public class MapGenerator : MonoBehaviour
                         //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
                         if (towns[t].townHeight == 0)
                         {
-                            if (globalNoiseMap[x, y] * meshHeightMultiplier <= waterHeight)
+                            if (meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier <= waterHeight)
                             {
-                                towns[t].townHeight = waterHeight + 1;
-                                towns[t].townNoiseHeight = (waterHeight + 1) / meshHeightMultiplier;
+                                towns[t].townHeight = waterHeight;
+                                towns[t].townNoiseHeight = waterNoiseHeight;
                             }
                             else
                             {
@@ -314,8 +311,8 @@ public class MapGenerator : MonoBehaviour
                             //Debug.Log(-Mathf.RoundToInt(towns[t].townPickupPoint.y));
                             if (globalNoiseMap[x, y] * meshHeightMultiplier <= waterHeight)
                             {
-                                towns[t].townPickupPointHeight = waterHeight + 1;
-                                towns[t].townPickupPointNoiseHeight = (waterHeight + 1) / meshHeightMultiplier;
+                                towns[t].townPickupPointHeight = waterHeight;
+                                towns[t].townPickupPointNoiseHeight = waterNoiseHeight;
                             }
                             else
                             {
@@ -331,6 +328,7 @@ public class MapGenerator : MonoBehaviour
                     }
                 }
                 vertexIndex++;
+                
             }
         }
 
@@ -348,7 +346,6 @@ public class MapGenerator : MonoBehaviour
                 await DrawChunk(chunkX, chunkY, globalNoiseMap);
             }
         }
-        navSurface.BuildNavMesh();
         //Create trees
         //Eventually should be based off of noisemap
         
@@ -504,7 +501,7 @@ public class MapGenerator : MonoBehaviour
             
         }
 
-
+        navSurface.BuildNavMesh();
     }
     //Debug method to draw a rect CORNER ALIGNED
     public void DebugDrawRect(Rect rect, float height, Color color)

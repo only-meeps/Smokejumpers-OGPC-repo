@@ -2219,8 +2219,8 @@ MonoBehaviour:
   townPosEditor: {x: 130, y: -130}
   townPos: {x: 0, y: 0}
   player: {fileID: 0}
-  drawDistance: 150
-  chunkDrawDistance: 200
+  drawDistance: 50
+  chunkDrawDistance: 100
   navSurface: {fileID: 0}
   helipads: []
   possibleMissions: []
@@ -2228,6 +2228,7 @@ MonoBehaviour:
   assaignedMissions: []
   water: {fileID: 2020169678}
   waterHeight: 0
+  waterNoiseHeight: 0
   missionPrefab: {fileID: 553546528191062898, guid: 18065d5eb7e41d242b807b7a5c63866a, type: 3}
   missionVerticalLayoutGroup: {fileID: 690885670}
   playableMapSize:

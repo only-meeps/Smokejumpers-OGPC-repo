@@ -159,6 +159,7 @@ MonoBehaviour:
   alreadyOnHeli: 0
   manuallyAssignedTarget: {x: 0, y: 0, z: 0}
   usingFireSpread: 0
+  rb: {fileID: 4142194446998192477}
 --- !u!54 &4142194446998192477
 Rigidbody:
   m_ObjectHideFlags: 0

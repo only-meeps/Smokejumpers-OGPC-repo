@@ -65,10 +65,12 @@ public class Helicopter : MonoBehaviour
     public AudioClip fuelWarningSound;
     public AudioClip roterSounds;
     public AudioSource roterSoundSource;
+    public Animator heliAnimator;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        heliAnimator.speed = 1;
         initialFuel = fuel;
         crashed = false;
         inputs = new HelicopterMovement();
@@ -127,16 +129,20 @@ public class Helicopter : MonoBehaviour
     // Update is called once per frame
     public void FixedUpdate()
     {
-
+        if(mapGenerator.waterHeight > transform.position.y && crashed == false)
+        {
+            Crash();
+        }
         helicopterRespawnLimiter++;
         touching = heliCollider.touching;
         //Debug.Log("tiltF : " + tiltF.IsPressed() + " tiltB : " + tiltB.IsPressed() + " tiltR : " + tiltR.IsPressed() + " tiltL : " + tiltL.IsPressed() + " Helicollider.touching : " + touching);
+        if ((tiltF.IsPressed() || tiltB.IsPressed() || tiltR.IsPressed() || tiltL.IsPressed() || rotateL.IsPressed() || rotateR.IsPressed()) && crashed == false && heliCollider.crashed == true && heliCollider.landed == false)
+        {
+            Crash();
+        }
         if (touching)
         {
-            if ((tiltF.IsPressed() || tiltB.IsPressed() || tiltR.IsPressed() || tiltL.IsPressed() || rotateL.IsPressed() || rotateR.IsPressed()) && crashed == false)
-            {
-                Crash();
-            }
+
             if (heliCollider.touchingObj.tag == "helipad" && heliCollider.touchingObj.GetComponent<Helipad>().hospital)
             {
                 for (int i = 0; i < capacity; i++)
@@ -376,17 +382,22 @@ public class Helicopter : MonoBehaviour
             Debug.Log("Respawn");
             Respawn();
         }
-        if(fuel < initialFuel / 4 && crashed == false && heliAudioSource.isPlaying == false)
+        if(fuel < (initialFuel / 4) && crashed == false && heliAudioSource.isPlaying == false)
         {
             heliAudioSource.clip = fuelWarningSound;
             heliAudioSource.loop = true;
             heliAudioSource.Play();
+        }
+        else if(heliAudioSource.clip == fuelWarningSound && fuel > (initialFuel / 4) && heliAudioSource.isPlaying)
+        {
+            heliAudioSource.Stop();
         }
 
     }
 
     public void Respawn()
     {
+        heliAnimator.speed = 1;
         roterSoundSource.clip = roterSounds;
         roterSoundSource.loop = true;
         roterSoundSource.Play();
@@ -408,6 +419,7 @@ public class Helicopter : MonoBehaviour
 
     void Crash()
     {
+        heliAnimator.speed = 0f;
         roterSoundSource.Stop();
         fuel = 0;
         crashed = true;

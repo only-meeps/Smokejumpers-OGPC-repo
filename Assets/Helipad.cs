@@ -4,6 +4,7 @@ public class Helipad : MonoBehaviour
 {
     public GameObject helipad;
     public float helipadNoiseHeight;
+    public bool setHeight;
     public Vector3 position;
     public bool fireStation;
     public bool gasStation;

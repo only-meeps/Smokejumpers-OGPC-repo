@@ -525,6 +525,7 @@ MonoBehaviour:
   fuelWarningSound: {fileID: 8300000, guid: f1855811f1a452d4f98f18b8a11600b3, type: 3}
   roterSounds: {fileID: 8300000, guid: b0a3f52479f6ed746838ebfa9f598130, type: 3}
   roterSoundSource: {fileID: 1945692914765582410}
+  heliAnimator: {fileID: 1815906277237698935}
 --- !u!82 &2954957255121008816
 AudioSource:
   m_ObjectHideFlags: 0
