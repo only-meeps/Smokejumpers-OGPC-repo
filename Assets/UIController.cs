@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class UIController : MonoBehaviour
 {
@@ -35,6 +36,17 @@ public class UIController : MonoBehaviour
     public TMP_Text timesRespawnedText;
     public TMP_Text respawnedScore;
     public Image respawnedBar;
+    public GameObject settingsObj;
+    public Slider helicopterFXSlider;
+    public GameObject soundFXObj;
+    public GameObject graphicsObj;
+
+    public Slider tileDrawDistance;
+    public Slider treeDrawDistance;
+    public Slider shadowQuality;
+    public Slider shadowDrawDistance;
+
+    public TMP_Dropdown screenRes;
 
     List<Marker> markers = new List<Marker>();
 
@@ -42,6 +54,22 @@ public class UIController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        helicopterFXSlider.value = PlayerPrefs.GetFloat("HeliFX");
+        shadowDrawDistance.value = PlayerPrefs.GetFloat("ShadowDrawDistance");
+        shadowQuality.value = PlayerPrefs.GetFloat("ShadowResolution");
+        screenRes.value = PlayerPrefs.GetInt("ScreenRes");
+        treeDrawDistance.value = PlayerPrefs.GetFloat("DrawDistance");
+        tileDrawDistance.value = PlayerPrefs.GetFloat("TileDrawDistance");
+        if(PlayerPrefs.GetInt("FirstTime") == 0)
+        {
+            PlayerPrefs.SetFloat("FirstTime", 1);
+            PlayerPrefs.SetFloat("HeliFX", 100);
+            PlayerPrefs.SetFloat("ShadowDrawDistance", 50);
+            PlayerPrefs.SetFloat("ShadowResolution", 1);
+            PlayerPrefs.SetInt("ScreenRes", 2);
+            PlayerPrefs.SetFloat("DrawDistance", 50);
+            PlayerPrefs.SetFloat("TileDrawDistance", 200);
+        }
         helicopter = GameObject.FindObjectsByType<Helicopter>(FindObjectsSortMode.None)[0];
         
         for(int i = 0; i < scoringObjects.Count; i++)
@@ -70,7 +98,69 @@ public class UIController : MonoBehaviour
             marker.image.rectTransform.anchoredPosition = GetPosOnCompass(marker);
         }
     }
+    public void MainMenu()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    public void ChangeGraphicsSettings()
+    {
+        PlayerPrefs.SetFloat("ShadowDrawDistance", shadowDrawDistance.value);
+        PlayerPrefs.SetFloat("ShadowResolution", shadowQuality.value);
+        QualitySettings.shadowDistance = shadowDrawDistance.value;
+        if(shadowQuality.value == 0 )
+        {
+            QualitySettings.shadowResolution = ShadowResolution.Low;
+        }
+        else if(shadowQuality.value == 1 ) 
+        {
+            QualitySettings.shadowResolution = ShadowResolution.Medium;
+        }
+        else if(shadowQuality.value == 2)
+        {
+            QualitySettings.shadowResolution = ShadowResolution.High;
+        }
+        else if(shadowQuality.value == 3)
+        {
+            QualitySettings.shadowResolution = ShadowResolution.VeryHigh;
+        }
+        PlayerPrefs.SetFloat("DrawDistance", treeDrawDistance.value);
+        PlayerPrefs.SetFloat("TileDrawDistance", tileDrawDistance.value);
+        if(screenRes.value == 0)
+        {
+            Screen.SetResolution(1280, 720, true);
+        }
+        else if(screenRes.value == 1)
+        {
+            Screen.SetResolution(1920, 1080, true);
+        }
+        else if(screenRes.value == 2)
+        {
+            Screen.SetResolution(2560, 1440, true);
+        }
+        else if(screenRes.value == 3)
+        {
+            Screen.SetResolution(3840, 2160, true);
+        }
+        PlayerPrefs.SetInt("ScreenRes", screenRes.value);
+    }
 
+    public void OpenGraphicsSettings()
+    {
+        if (!graphicsObj.activeSelf)
+        {
+            graphicsObj.SetActive(true);
+            soundFXObj.SetActive(false);
+        }
+    }
+
+    public void OpenSoundSettings()
+    {
+        if (!soundFXObj.activeSelf)
+        {
+            graphicsObj.SetActive(false);
+            soundFXObj.SetActive(true);
+        }
+    }
     public void AddMarker (Marker marker)
     {
         GameObject newMarker = Instantiate(iconPrefab, compass.transform);
@@ -80,6 +170,10 @@ public class UIController : MonoBehaviour
         markers.Add(marker);
     }
 
+    public void ChangeVolumeSettings()
+    {
+        PlayerPrefs.SetFloat("HeliFX", helicopterFXSlider.value);
+    }
     public void RemoveMarker (Marker marker)
     {
         if(marker != null && marker.GetComponent<Image>() != null)
@@ -90,6 +184,27 @@ public class UIController : MonoBehaviour
 
     }
 
+    public void Settings()
+    {
+        if(settingsObj.activeSelf)
+        {
+            settingsObj.SetActive(false);
+        }
+        else
+        {
+            settingsObj.SetActive(true);
+        }
+    }
+
+    public void Quit()
+    {
+        Application.Quit();
+    }
+
+    public void Credits()
+    {
+
+    }
     public IEnumerator Scoring(int missionsCompleted, int citizensKilled, int citizensDiedToFire, int timesRespawned)
     {
         for (int i = 0; i < scoringObjects.Count; i++)

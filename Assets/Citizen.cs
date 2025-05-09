@@ -17,9 +17,14 @@ public class Citizen : MonoBehaviour
     public Vector3 manuallyAssignedTarget;
     public bool usingFireSpread;
     public Rigidbody rb;
+    public int burnTime;
+    public int maxBurnTime;
+    System.Random rnd = new System.Random();
+    public Animator animator;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        maxBurnTime = rnd.Next(0, 10000);
         startingPos = transform.position;
         helicopter = FindObjectsByType<Helicopter>(FindObjectsSortMode.None)[0];
         if (FindObjectsByType<Fire_Spread>(FindObjectsSortMode.None).Length != 0)
@@ -49,7 +54,7 @@ public class Citizen : MonoBehaviour
             {
                 for (int i = 0; i < Fire_Spread.fireAreas.Count; i++)
                 {
-                    if (Fire_Spread.RectContains(transform.position, Fire_Spread.fireAreas[i]))
+                    if (RectContains(transform.position, Fire_Spread.fireAreas[i]))
                     {
                         Debug.Log("A citizen died in a fire");
                         helicopter.citizensDiedInFire++;
@@ -105,7 +110,11 @@ public class Citizen : MonoBehaviour
             {
                 for (int i = 0; i < MapGenerator.fireAreas.Count; i++)
                 {
-                    if (MapGenerator.fireAreas[i].Contains(transform.position))
+                    if (RectContains(new Vector2(transform.position.x, transform.position.z), MapGenerator.fireAreas[i]) && maxBurnTime > burnTime)
+                    {
+                        burnTime++;
+                    }
+                    else if (burnTime > maxBurnTime)
                     {
                         Debug.Log("A citizen died in a fire");
                         helicopter.citizensDiedInFire++;
@@ -127,11 +136,12 @@ public class Citizen : MonoBehaviour
                         }
                     }
                     agent.SetDestination(closestEntrance.transform.position);
-
+                    animator.speed = 1;
                 }
                 else
                 {
                     agent.SetDestination(startingPos);
+                    animator.speed = 1;
                 }
 
             }
@@ -152,33 +162,57 @@ public class Citizen : MonoBehaviour
                 helicopter.citizensKilled++;
                 MapGenerator.towns[townIndex].townCitizenCount--;
                 MapGenerator.towns[townIndex].townDeadCitizenCount++;
-                
+
                 Destroy(this.gameObject);
             }
         }
-
+        if (touchingHospitalDoor)
+        {
+            helicopter.citizensRescued++;
+            Destroy(this.gameObject);
+        }
+        if(Vector3.Distance(startingPos, this.transform.position) < 0.05)
+        {
+            animator.speed = 0;
+        }
     }
+
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log(other.gameObject.tag);
         if (other.gameObject.tag == "Door")
         {
             touchingDoor = true;
+        }
+        if (other.gameObject.tag == "Hospital Door")
+        {
+            Debug.Log("touching door");
+            touchingHospitalDoor = true;
         }
     }
 
     public void OnCollisionStay(Collision collision)
     {
-        Debug.Log(collision.gameObject.name);
         if (collision.gameObject.name == "HelicopterMain")
         {
             touchingHeli = true;
         }
-        if (collision.gameObject.tag == "Hospital door")
+
+    }
+    public bool RectContains(Vector3 Input, Rect Rect)
+    {
+        float halfWidth = Rect.width / 2f;
+        float halfHeight = Rect.height / 2f;
+
+        if ((Input.x < Rect.x + halfWidth)
+            && (Input.x > Rect.x - halfWidth)
+            && (Input.z < Rect.y + halfHeight)
+            && (Input.z > Rect.y - halfHeight))
         {
-            helicopter.citizensRescued++;
-            Destroy(this.gameObject);
-            touchingHospitalDoor = true;
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
     private void OnCollisionExit(Collision collision)

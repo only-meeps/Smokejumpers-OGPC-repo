@@ -514,7 +514,7 @@ MonoBehaviour:
   - {fileID: 6815017635588317337}
   capacity: 0
   maxCapacity: 6
-  citizenPrefab: {fileID: 5324021099022924450, guid: 97987d0483c022b4d9b1a431e202ed3a, type: 3}
+  citizenPrefab: {fileID: 4002477286547539170, guid: d8dbcdf561757d546b4cd76f1930199f, type: 3}
   fuel: 10000
   fuelEfficency: 0
   explosionPrefab: {fileID: 1753776141928924, guid: 045d5fbbf8161ea478959fe3c8e41207, type: 3}
@@ -526,6 +526,10 @@ MonoBehaviour:
   roterSounds: {fileID: 8300000, guid: b0a3f52479f6ed746838ebfa9f598130, type: 3}
   roterSoundSource: {fileID: 1945692914765582410}
   heliAnimator: {fileID: 1815906277237698935}
+  titleScreenFollowOffset: {x: 4, y: 4, z: 5}
+  gameFollowOffset: {x: 0, y: 50, z: 0.6}
+  titleScreenFollowRot: {x: 25, y: -158, z: 0}
+  gameFollowRot: {x: 90, y: 0, z: 0}
 --- !u!82 &2954957255121008816
 AudioSource:
   m_ObjectHideFlags: 0
@@ -724,6 +728,8 @@ MonoBehaviour:
   touching: 0
   touchingObj: {fileID: 0}
   touchingObjName: 
+  landed: 0
+  crashed: 0
 --- !u!208 &3289487422632485571
 NavMeshObstacle:
   m_ObjectHideFlags: 0

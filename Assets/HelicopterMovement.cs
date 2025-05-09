@@ -180,6 +180,15 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Pause"",
+                    ""type"": ""Button"",
+                    ""id"": ""ecfbf13a-a3ba-41c6-be4a-1518e85d5d6e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -292,6 +301,17 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
                     ""action"": ""Restart"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b50c1525-82dd-401f-a812-7208d1163bed"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -310,6 +330,7 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
         m_General_Down = m_General.FindAction("Down", throwIfNotFound: true);
         m_General_OnOff_Engine_Toggle = m_General.FindAction("On/Off_Engine_Toggle", throwIfNotFound: true);
         m_General_Restart = m_General.FindAction("Restart", throwIfNotFound: true);
+        m_General_Pause = m_General.FindAction("Pause", throwIfNotFound: true);
     }
 
     ~@HelicopterMovement()
@@ -400,6 +421,7 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
     private readonly InputAction m_General_Down;
     private readonly InputAction m_General_OnOff_Engine_Toggle;
     private readonly InputAction m_General_Restart;
+    private readonly InputAction m_General_Pause;
     /// <summary>
     /// Provides access to input actions defined in input action map "General".
     /// </summary>
@@ -451,6 +473,10 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "General/Restart".
         /// </summary>
         public InputAction @Restart => m_Wrapper.m_General_Restart;
+        /// <summary>
+        /// Provides access to the underlying input action "General/Pause".
+        /// </summary>
+        public InputAction @Pause => m_Wrapper.m_General_Pause;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -507,6 +533,9 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
             @Restart.started += instance.OnRestart;
             @Restart.performed += instance.OnRestart;
             @Restart.canceled += instance.OnRestart;
+            @Pause.started += instance.OnPause;
+            @Pause.performed += instance.OnPause;
+            @Pause.canceled += instance.OnPause;
         }
 
         /// <summary>
@@ -548,6 +577,9 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
             @Restart.started -= instance.OnRestart;
             @Restart.performed -= instance.OnRestart;
             @Restart.canceled -= instance.OnRestart;
+            @Pause.started -= instance.OnPause;
+            @Pause.performed -= instance.OnPause;
+            @Pause.canceled -= instance.OnPause;
         }
 
         /// <summary>
@@ -658,5 +690,12 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnRestart(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Pause" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPause(InputAction.CallbackContext context);
     }
 }

@@ -24,6 +24,7 @@ public class Helicopter : MonoBehaviour
     private InputAction down;
     private InputAction engineToggle;
     private InputAction restart;
+    private InputAction pause;
     public Rigidbody rb;
     public float tiltLimiter;
     public float tiltSpeed;
@@ -66,6 +67,12 @@ public class Helicopter : MonoBehaviour
     public AudioClip roterSounds;
     public AudioSource roterSoundSource;
     public Animator heliAnimator;
+    bool titleScreen;
+    public Vector3 titleScreenFollowOffset = new Vector3(4,4,5 ); 
+    public Vector3 gameFollowOffset = new Vector3(0,50,0.6f);
+    public Vector3 titleScreenFollowRot = new Vector3(25,-158,0);
+    public Vector3 gameFollowRot = new Vector3(90,0,0);
+    public GameObject pauseUI;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -84,9 +91,12 @@ public class Helicopter : MonoBehaviour
         up = inputs.General.Up;
         down = inputs.General.Down;
         restart = inputs.General.Restart;
+        pause = inputs.General.Pause;
         
         cinemachineCam = Instantiate(cameraPrefab).GetComponent<CinemachineCamera>();
         cinemachineCam.Follow = transform;
+
+        pauseUI = GameObject.FindGameObjectWithTag("PauseMenu");
 
         roterSoundSource.clip = roterSounds;
         roterSoundSource.loop = true;
@@ -101,6 +111,7 @@ public class Helicopter : MonoBehaviour
     {
         inputs.General.Enable();
         restart.Enable();
+        pause.Enable();
         engineToggle.Enable();
         tiltF.Enable();
         tiltB.Enable();
@@ -115,6 +126,7 @@ public class Helicopter : MonoBehaviour
     {
         inputs.General.Disable();
         restart.Disable();
+        pause.Disable();
         engineToggle.Disable();
         tiltF.Disable();
         tiltB.Disable();
@@ -126,10 +138,27 @@ public class Helicopter : MonoBehaviour
         down.Disable();
     }
 
+    public void TitleScreen()
+    {
+        titleScreen = true;
+        inputs.Disable();
+        cinemachineCam.gameObject.GetComponent<CinemachineFollow>().FollowOffset = titleScreenFollowOffset;
+        cinemachineCam.gameObject.transform.eulerAngles = titleScreenFollowRot;
+    }
+    public void GameView()
+    {
+        titleScreen = false;
+        inputs.Enable();
+        cinemachineCam.gameObject.GetComponent<CinemachineFollow>().FollowOffset = gameFollowOffset;
+        cinemachineCam.gameObject.transform.eulerAngles = gameFollowRot;
+        Debug.Log(cinemachineCam.transform.eulerAngles);
+    }
     // Update is called once per frame
     public void FixedUpdate()
     {
-        if(mapGenerator.waterHeight > transform.position.y && crashed == false)
+        roterSoundSource.volume = PlayerPrefs.GetFloat("HeliFX");
+        heliAudioSource.volume = PlayerPrefs.GetFloat("HeliFX");
+        if (mapGenerator.waterHeight > transform.position.y && crashed == false)
         {
             Crash();
         }
@@ -182,17 +211,15 @@ public class Helicopter : MonoBehaviour
         }
         touching = heliCollider.touching;
         Helipad helipad;
-        if(heliCollider.touching == false)
+        if(heliCollider.touching == false && !titleScreen)
         {
-
-                fuelEfficency = transform.position.y / 5;
-            
+            fuelEfficency = transform.position.y / 5;
         }
-        else if(heliCollider.touchingObj.TryGetComponent<Helipad>(out helipad) && fuel < initialFuel)
+        else if(heliCollider.touchingObj.TryGetComponent<Helipad>(out helipad) && fuel < initialFuel && heliCollider.touchingObj)
         {
             if (helipad.gasStation)
             {
-                fuelEfficency = -5;
+                fuelEfficency = -20;
             }
             else
             {
@@ -209,7 +236,6 @@ public class Helicopter : MonoBehaviour
             fuel += 2;
         }
         */
-
         if (engineToggle.IsPressed())
         {
             if (engineOn)
@@ -376,7 +402,7 @@ public class Helicopter : MonoBehaviour
             //rb.rotation = new Quaternion(0, rb.rotation.y, 0, rb.rotation.w);
             rb.useGravity = false;
         }
-        if (restart.IsPressed() && helicopterRespawnLimiter > 15)  
+        if (restart.IsPressed() && helicopterRespawnLimiter > 100)  
         {
 
             Debug.Log("Respawn");
@@ -394,7 +420,22 @@ public class Helicopter : MonoBehaviour
         }
 
     }
-
+    public void Update()
+    {
+        if (pause.IsPressed())
+        {
+            if (Time.timeScale == 0)
+            {
+                pauseUI.SetActive(false);
+                Time.timeScale = 1f;
+            }
+            else
+            {
+                pauseUI.SetActive(true);
+                Time.timeScale = 0f;
+            }
+        }
+    }
     public void Respawn()
     {
         heliAnimator.speed = 1;
@@ -434,6 +475,7 @@ public class Helicopter : MonoBehaviour
         {
             gameObject.GetComponentsInChildren<MeshRenderer>()[i].enabled = false;
         }
+        fracturedHeli.transform.eulerAngles = gameObject.transform.eulerAngles;
         heliAudioSource.Stop();
         heliAudioSource.clip = crashSound;
         heliAudioSource.loop = false;

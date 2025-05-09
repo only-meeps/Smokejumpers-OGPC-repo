@@ -51,7 +51,7 @@ public class MapGenerator : MonoBehaviour
     public Vector2 townPos;
     public GameObject player;
     public float drawDistance;
-    public int chunkDrawDistance;
+    public float chunkDrawDistance;
     public NavMeshSurface navSurface;
     public List<Helipad> helipads = new List<Helipad>();
     public List<Mission> possibleMissions = new List<Mission>();
@@ -67,10 +67,19 @@ public class MapGenerator : MonoBehaviour
     public int citizensKilled;
     public int citizensDied;
     public int timesRespawned;
+    private bool startedScore;
+    public bool titleScreen;
+    public GameObject titleScreenUIObj;
+    public GameObject gameUIObj;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Awake()
     {
+
+        drawDistance = PlayerPrefs.GetFloat("DrawDistance");
+        chunkDrawDistance = PlayerPrefs.GetFloat("TileDrawDistance");
+        gameUIObj.SetActive(false);
+        titleScreen = true;
         Mission citizenPickupMission = new Mission();
 
         citizenPickupMission.markerSprite = townIcon;
@@ -82,7 +91,7 @@ public class MapGenerator : MonoBehaviour
         citizenPickupMission.afterFire = false;
 
         possibleMissions.Add(citizenPickupMission);
-
+        
         meshHeightMultiplier = rnd.Next(24, 40);
         meshHeightCurve = new AnimationCurve();
         meshHeightCurve.AddKey(0, 0);
@@ -91,6 +100,7 @@ public class MapGenerator : MonoBehaviour
         {
             meshHeightCurve.AddKey(UnityEngine.Random.Range(0, 0.90f), UnityEngine.Random.Range(0, 1));
         }
+        
         playableMapSize = new Rect(new Vector2(0,0), new Vector2((mapSize) * chunkSize, -(mapSize) * chunkSize));
         DrawRect(playableMapSize, 0, townPickupZoneMat, 1, "mapSize", null);
         waterNoiseHeight = UnityEngine.Random.Range(-.2f, .1f);
@@ -104,7 +114,7 @@ public class MapGenerator : MonoBehaviour
         display.MeshRenderer = new MeshRenderer[mapSize, mapSize];
         display.meshCollider = new MeshCollider[mapSize, mapSize];
         int helipadsCount = rnd.Next(2, 4);
-        int spawnHelipad = rnd.Next(1, helipadsCount);
+        int spawnHelipad = rnd.Next(0, helipadsCount);
         int hospitals = 0;
         int gasStations = 0;
         int ContainerPickupPoints = 0;
@@ -163,17 +173,19 @@ public class MapGenerator : MonoBehaviour
 
             }
         }
-        for(int i = 0; i < helipadsCount; i++)
+        Debug.Log("spawnpad " + spawnHelipad + " padcount" + helipadsCount);
+        for (int i = 0; i < helipadsCount; i++)
         {
             //Assign compass markers to the helipad
             if (helipadSettings[i].spawnHelipad)
             {
                 player = Instantiate(helicopterPrefab, new Vector3(helipadSettings[i].helipad.transform.position.x, .85f, helipadSettings[i].helipad.transform.position.z), Quaternion.identity);
+                player.GetComponentInChildren<Helicopter>().TitleScreen();
             }
             Marker helipadCompassMarker = helipadSettings[i].helipad.AddComponent<Marker>();
             helipadCompassMarker.icon = helipadIcon;
             UIController.AddMarker(helipadCompassMarker);
-            helipads.Add(helipadSettings[i]);
+            helipads.Add(helipadSettings[i]); 
         }
 
 
@@ -193,8 +205,8 @@ public class MapGenerator : MonoBehaviour
             float townZ;
 
             //Assign position
-            townX = rnd.Next(0, (mapSize * (chunkSize)));
-            townZ = rnd.Next(-(mapSize * (chunkSize )), 0);
+            townX = rnd.Next(chunkSize, ((mapSize - 1) * (chunkSize)));
+            townZ = rnd.Next(-((mapSize + - 1) * (chunkSize )), -chunkSize);
 
             //Assign width
             townWidth = rnd.Next(6, 10);
@@ -209,20 +221,18 @@ public class MapGenerator : MonoBehaviour
             town.townPickupPoint.y = rnd.Next(Mathf.RoundToInt((town.town.y - 30)), Mathf.RoundToInt(town.town.height + town.town.y + 30));
             town.townPickupPoint.width = 6;
             town.townPickupPoint.height = 6;
-
-            int loops = 0;
-            while (!RectContainsRect(new Rect(new Vector2(0,0), new Vector2(mapSize * chunkSize, -mapSize * chunkSize)), new Rect (new Vector2(town.townPickupPoint.x, town.townPickupPoint.y), new Vector2(town.townPickupPoint.width + 3, town.townPickupPoint.height + 3))))
+            for (int h = 0; h < helipads.Count; h++)
             {
-                town.townPickupPoint.x = rnd.Next(Mathf.RoundToInt(town.town.x - 30), Mathf.RoundToInt(town.town.width + town.town.x + 30));
-                town.townPickupPoint.y = rnd.Next(Mathf.RoundToInt((town.town.y - 30)), Mathf.RoundToInt(town.town.height + town.town.y + 30));
-                town.townPickupPoint.width = 6;
-                town.townPickupPoint.height = 6;
-                loops++;
-                if(loops > 10)
+                while (Vector2.Distance(town.townPickupPoint.position, new Vector2(helipads[h].position.x, helipads[h].position.z)) < 15)
                 {
-                    break;
+                    town.townPickupPoint.x = rnd.Next(Mathf.RoundToInt(town.town.x - 30), Mathf.RoundToInt(town.town.width + town.town.x + 30));
+                    town.townPickupPoint.y = rnd.Next(Mathf.RoundToInt((town.town.y - 30)), Mathf.RoundToInt(town.town.height + town.town.y + 30));
+                    town.townPickupPoint.width = 6;
+                    town.townPickupPoint.height = 6;
                 }
             }
+
+            
 
             //Pick number of citizens
             town.townCitizenCount = rnd.Next(5, 10);
@@ -255,10 +265,12 @@ public class MapGenerator : MonoBehaviour
                         if (!helipads[h].setHeight)
                         {
                             helipads[h].setHeight = true;
-                            if (globalNoiseMap[x, y] > waterNoiseHeight)
+                            if (meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier > waterHeight)
                             {
-                                helipads[h].position = new Vector3(helipads[h].position.x, (meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier) + 0.1f, helipads[h].position.z);
+                                helipads[h].position = new Vector3(helipads[h].position.x, (meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier) - (helipads[h].helipad.transform.lossyScale.y), helipads[h].position.z);
                                 helipads[h].helipad.transform.position = helipads[h].position;
+                                helipads[h].helipadNoiseHeight = globalNoiseMap[x, y];
+                                
                                 if (helipads[h].spawnHelipad)
                                 {
                                     player.transform.position = new Vector3(player.transform.position.x, helipads[h].position.y + 2, player.transform.position.z);
@@ -348,8 +360,8 @@ public class MapGenerator : MonoBehaviour
         }
         //Create trees
         //Eventually should be based off of noisemap
-        
-        for (int i = 0; i < rnd.Next(5000, 10000); i++)
+        List<GameObject> treesToSpawn = new List<GameObject>();
+        for (int i = 0; i < rnd.Next(3000, 6000); i++)
         {
             //Create variables
             float treeX;
@@ -366,7 +378,7 @@ public class MapGenerator : MonoBehaviour
                     treeZ = UnityEngine.Random.Range(0, -chunkSize * mapSize);
                 }
             }
-
+            
             //Check if inside town and spawn tree
             RaycastHit hit;
             if (Physics.Raycast(new Vector3(treeX, 1000, treeZ), Vector3.down, out hit))
@@ -375,15 +387,21 @@ public class MapGenerator : MonoBehaviour
                 {
                     for (int j = 0; j < towns.Count; j++)
                     {
-                        if (!towns[j].town.Contains(new Vector2(treeX, treeZ)) && !towns[j].townPickupPoint.Contains(new Vector2(treeX, treeZ)))
+                        if (!towns[j].town.Contains(new Vector2(treeX, treeZ)) && !towns[j].townPickupPoint.Contains(new Vector2(treeX, treeZ)) && hit.collider.gameObject.name != treePrefab.name)
                         {
-                            trees.Add(Instantiate(treePrefab, new Vector3(treeX, hit.point.y, treeZ), Quaternion.identity));
+                            GameObject tree = new GameObject();
+                            tree.transform.position = hit.point;
+                            treesToSpawn.Add(tree);
                             break;
                         }
                     }
                 }
             }
 
+        }
+        for(int i = 0; i < treesToSpawn.Count; i++)
+        {
+            trees.Add(Instantiate(treePrefab, treesToSpawn[i].transform.position, Quaternion.identity));
         }
         for (int i = 0; i < helipadsCount; i++)
         {
@@ -421,25 +439,29 @@ public class MapGenerator : MonoBehaviour
             List<GameObject> townHouses = new List<GameObject>();
 
             //Spawn houses
-            
-            //for (int j = 0; j < houses; j++)
-            //{
-            //    //Assign variables
-            //    float houseX = 0;
-            //    float houseZ = 0;
 
-            //    //Assign position
-            //    houseX = UnityEngine.Random.Range(towns[i].town.x, towns[i].town.width + towns[i].town.x);
-            //    houseZ = UnityEngine.Random.Range(towns[i].town.y, towns[i].town.height + towns[i].town.y);
+            for (int j = 0; j < houses; j++)
+            {
+                //Assign variables
+                float houseX = 0;
+                float houseZ = 0;
 
-            //    //Add house to town list
-            //    townHouses.Add(Instantiate(buildingPrefabs[rnd.Next(0, buildingPrefabs.Count)], new Vector3(houseX, towns[i].townHeight, houseZ), Quaternion.identity));
+                //Assign position
+                houseX = UnityEngine.Random.Range(towns[i].town.x, towns[i].town.width + towns[i].town.x);
+                houseZ = UnityEngine.Random.Range(towns[i].town.y, towns[i].town.height + towns[i].town.y);
 
-            //    //Add house to burnable objects
-            //    trees.Add(townHouses[j]);
-            //}
 
-            //towns[i].houses = townHouses;
+                int housePrefab = rnd.Next(0, buildingPrefabs.Count);
+                //Add house to town list
+                townHouses.Add(Instantiate(buildingPrefabs[housePrefab], new Vector3(houseX, towns[i].townHeight + (buildingPrefabs[housePrefab].GetComponent<MeshRenderer>().bounds.size.y / 2), houseZ), Quaternion.identity));
+
+
+                townHouses[j].transform.Rotate(new Vector3(-90, 0, 0));
+                //Add house to burnable objects
+                trees.Add(townHouses[j]);
+            }
+
+            towns[i].houses = townHouses;
 
             //Spawn citizens
             for (int j = 0; j < towns[i].townCitizenCount; j++)
@@ -552,26 +574,26 @@ public class MapGenerator : MonoBehaviour
         Debug.DrawLine(new Vector3((rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), new Vector3(-(rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), color);
         Debug.DrawLine(new Vector3(-(rect.width / 2) + rect.x, height, (rect.height / 2) + rect.y), new Vector3(-(rect.width / 2) + rect.x, height, -(rect.height / 2) + rect.y), color);
     }
+    public void StartGame()
+    {
+        Debug.Log("Started game");
+        titleScreenUIObj.SetActive(false);
+        gameUIObj.SetActive(true);
+        titleScreen = false;
+        player.GetComponentInChildren<Helicopter>().GameView();
+    }
 
+    public void DebugLog()
+    {
+        Debug.Log("Logged");
+    }
     void Update()
     {
-        
-        for(int i = 0; i < towns.Count; i++)
-        {
-            if (towns[i].townCitizenCount == 0 && towns[i].townLinkedMission.isActiveAndEnabled)
-            {
-                Debug.Log("Mission done");
-                //towns[i].townMarker.gameObject.SetActive(false);
-                towns[i].townLinkedMission.gameObject.SetActive(false);
-                assaignedMissions.Remove(towns[i].townLinkedMission);
-                missionsCompleted++;
-            }
-        }
-        for(int y = 0; y < chunks.GetLength(1); y++)
+        for (int y = 0; y < chunks.GetLength(1); y++)
         {
             for (int x = 0; x < chunks.GetLength(0); x++)
             {
-                if(Vector2.Distance(new Vector2(player.transform.position.x, player.transform.position.z), new Vector2(chunks[x,y].transform.position.x, chunks[x, y].transform.position.z)) < chunkDrawDistance)
+                if (Vector2.Distance(new Vector2(player.transform.position.x, player.transform.position.z), new Vector2(chunks[x, y].transform.position.x, chunks[x, y].transform.position.z)) < chunkDrawDistance)
                 {
                     chunks[x, y].SetActive(true);
                 }
@@ -581,122 +603,143 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
-        if(assaignedMissions.Count == 0 && player.GetComponentInChildren<Helicopter>().capacity == 0)
+        if (titleScreen == false)
         {
-            StartCoroutine(UIController.Scoring(missionsCompleted ,player.GetComponentInChildren<Helicopter>().citizensKilled, player.GetComponentInChildren<Helicopter>().citizensDiedInFire, timesRespawned));
-        }
-        /*
-        if(townPosEditor != townPos)
-        {
-            townPos = townPosEditor;
-            GenerateMap();
-        }
-        */
-        //Debug Draw the fire areas and update their positions
-        for (int i = 0; i < fireAreas.Count; i++)
-        {
-            fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width + 0.01f, fireAreas[i].height + 0.01f));
-            DebugDrawRectCentered(fireAreas[i], 1, Color.red);
-        }
-
-        //Debug draw the towns and update the compass markers
-        for (int i = 0; i < towns.Count; i++)
-        {
-            DebugDrawRect(towns[i].town, towns[i].townHeight, Color.green);
-
-            if (towns[i].townCitizenCount == 0)
+            for (int i = 0; i < towns.Count; i++)
             {
-                UIController.RemoveMarker(towns[i].townMarker);
-            }
-        }
-
-        //Check trees
-        for (int i = 0; i < trees.Count; i++)
-        {
-            if (Vector3.Distance(player.transform.position, trees[i].transform.position) > drawDistance)
-            {
-                trees[i].SetActive(false);
-            }
-            else
-            {
-                trees[i].SetActive(true);
-            }
-            for (int f = 0; f < fireAreas.Count; f++)
-            {
-                //Check if tree is inside of fire
-                if (RectContains(trees[i].transform.position, fireAreas[f]))
+                if (towns[i].townCitizenCount == 0 && towns[i].townLinkedMission.isActiveAndEnabled)
                 {
-                    //Check if tree is included in the burning trees list and, if not, then start burning it
-                    if (!burningTrees.Contains(trees[i]) && rnd.Next(0, 500) == 2)
-                    {
-                        burningTrees.Add(trees[i]);
+                    Debug.Log("Mission done");
+                    //towns[i].townMarker.gameObject.SetActive(false);
+                    towns[i].townLinkedMission.gameObject.SetActive(false);
+                    assaignedMissions.Remove(towns[i].townLinkedMission);
+                    missionsCompleted++;
+                }
+            }
 
-                        //Add fire effect
-                        GameObject fire = Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + transform.lossyScale.y, trees[i].transform.position.z), Quaternion.identity);
-                        fire.transform.localScale = new Vector3(2, 2, 2);
-                        fires.Add(fire);
-                    }
-                   
-                    //Check if tree is burned out
-                    if (trees[i].GetComponent<Tree>().fireCycleLoop > rnd.Next(1000, 2000))
+            if (assaignedMissions.Count == 0 && player.GetComponentInChildren<Helicopter>().capacity == 0 && startedScore == false)
+            {
+                startedScore = true;
+                StartCoroutine(UIController.Scoring(missionsCompleted, player.GetComponentInChildren<Helicopter>().citizensKilled, player.GetComponentInChildren<Helicopter>().citizensDiedInFire, timesRespawned));
+            }
+            /*
+            if(townPosEditor != townPos)
+            {
+                townPos = townPosEditor;
+                GenerateMap();
+            }
+            */
+            //Debug Draw the fire areas and update their positions
+            for (int i = 0; i < fireAreas.Count; i++)
+            {
+                fireAreas[i] = new Rect(fireAreas[i].position, new Vector2(fireAreas[i].width + 0.03f, fireAreas[i].height + 0.03f));
+                DebugDrawRectCentered(fireAreas[i], 1, Color.red);
+            }
+
+            //Debug draw the towns and update the compass markers
+            for (int i = 0; i < towns.Count; i++)
+            {
+                DebugDrawRect(towns[i].town, towns[i].townHeight, Color.green);
+
+                if (towns[i].townCitizenCount == 0)
+                {
+                    UIController.RemoveMarker(towns[i].townMarker);
+                }
+            }
+
+            //Check trees
+            for (int i = 0; i < trees.Count; i++)
+            {
+                if (Vector3.Distance(player.transform.position, trees[i].transform.position) > drawDistance)
+                {
+                    trees[i].SetActive(false);
+                }
+                else
+                {
+                    trees[i].SetActive(true);
+                }
+                for (int f = 0; f < fireAreas.Count; f++)
+                {
+                    //Check if tree is inside of fire
+                    if (RectContains(new Vector2(trees[i].transform.position.x, trees[i].transform.position.z), fireAreas[f]))
                     {
-                        for (int j = 0; j < burningTrees.Count; j++)
+                        //Check if tree is included in the burning trees list and, if not, then start burning it
+                        if (!burningTrees.Contains(trees[i]) && rnd.Next(0, 500) == 2)
                         {
-                            if (trees[i] == burningTrees[j] && !burntTrees.Contains(trees[i]))
+                            burningTrees.Add(trees[i]);
+
+                            //Add fire effect
+                            GameObject fire = Instantiate(firePrefab, new Vector3(trees[i].transform.position.x, trees[i].transform.position.y + transform.lossyScale.y, trees[i].transform.position.z), Quaternion.identity);
+                            fire.transform.localScale = new Vector3(2, 2, 2);
+                            fires.Add(fire);
+                        }
+
+                        //Check if tree is burned out
+                        if (trees[i].GetComponent<Tree>().fireCycleLoop > rnd.Next(1000, 2000))
+                        {
+                            for (int j = 0; j < burningTrees.Count; j++)
                             {
-                                burntTrees.Add(burningTrees[j]);
-
-                                //Remove the fire
-                                Destroy(fires[j].gameObject);
-
-                                //Turn all parts under the burnable parts list black
-                                for (int t = 0; t < trees[i].GetComponent<Tree>().burnableParts.Count; t++)
+                                if (trees[i] == burningTrees[j] && !burntTrees.Contains(trees[i]))
                                 {
-                                    //Create a new material
-                                    Material mat = trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial;
+                                    burntTrees.Add(burningTrees[j]);
 
-                                    //Change color of material
-                                    mat = new Material(mat);
-                                    mat.color = Color.black;
+                                    //Remove the fire
+                                    Destroy(fires[j].gameObject);
 
-                                    //Apply material
-                                    trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial = mat;
+                                    //Turn all parts under the burnable parts list black
+                                    for (int t = 0; t < trees[i].GetComponent<Tree>().burnableParts.Count; t++)
+                                    {
+                                        //Create a new material
+                                        Material mat = trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial;
+
+                                        //Change color of material
+                                        mat = new Material(mat);
+                                        mat.color = Color.black;
+
+                                        //Apply material
+                                        trees[i].GetComponent<Tree>().burnableParts[t].GetComponent<Renderer>().sharedMaterial = mat;
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
                     }
                 }
+
             }
 
-        }
 
-
-        //Update burn time
-        for (int i = 0; i < burningTrees.Count; i++)
-        {
-            burningTrees[i].GetComponent<Tree>().fireCycleLoop++;
-            if (fires[i]!= null)
+            //Update burn time
+            for (int i = 0; i < burningTrees.Count; i++)
             {
-                if (Vector3.Distance(player.transform.position, fires[i].transform.position) > drawDistance && !burntTrees.Contains(trees[i]))
+                burningTrees[i].GetComponent<Tree>().fireCycleLoop++;
+                if (fires[i] != null)
                 {
-                    fires[i].SetActive(false);
+                    if (Vector3.Distance(player.transform.position, fires[i].transform.position) > drawDistance && !burntTrees.Contains(trees[i]))
+                    {
+                        fires[i].SetActive(false);
+                    }
+                    else
+                    {
+                        fires[i].SetActive(true);
+                    }
                 }
-                else
-                {
-                    fires[i].SetActive(true);
-                }
-            }
 
+            }
         }
+        
     }
+
     //Check if a object is inside a rect CORNER ALLIGNED DEPRECATED : USE .Contains INSTEAD
     public bool RectContains(Vector3 Input, Rect Rect)
     {
-        if ((Input.x < (Rect.width) + Rect.x)
-            && (Input.x > -(Rect.width) + Rect.x)
-            && (Input.z < (Rect.height) + Rect.y)
-            && (Input.z > -(Rect.height) + Rect.y))
+        float halfWidth = Rect.width / 2f;
+        float halfHeight = Rect.height / 2f;
+
+        if ((Input.x < Rect.x + halfWidth)
+            && (Input.x > Rect.x - halfWidth)
+            && (Input.z < Rect.y + halfHeight)
+            && (Input.z > Rect.y - halfHeight))
         {
             return true;
         }
@@ -705,15 +748,17 @@ public class MapGenerator : MonoBehaviour
             return false;
         }
     }
-
     //Check if a rect is inside another rect CORNER ALLIGNED
     public bool RectContainsRect(Rect Input, Rect Rect)
     {
-        if(Input.x > Rect.x && Input.x + Input.width < Rect.x + Rect.width && Input.y > Rect.y && Input.y + Input.height < Rect.height + Rect.y)
+        if (Input.x >= Rect.x && Input.x + Input.width <= Rect.x + Rect.width && Input.y >= Rect.y && Input.y + Input.height <= Rect.y + Rect.height)
         {
             return true;
         }
-        else return false;
+        else
+        {
+            return false;
+        }
     }
 
     public async Task DrawChunk(int chunkX, int chunkY, float[,] globalNoiseMap)
