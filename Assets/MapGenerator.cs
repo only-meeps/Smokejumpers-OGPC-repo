@@ -681,7 +681,7 @@ public class MapGenerator : MonoBehaviour
             {
                 if (player.GetComponentInParent<HeliCollider>().touchingObj == helipads[h].helipad)
                 {
-                    if (helipads[h].fireStation && helipads[h].fireFightersDeployed <= 10)
+                    if (helipads[h].fireStation && helipads[h].fireFightersDeployed <= 50)
                     {
                         helipads[h].fireFightersDeployed++;
                         GameObject fireFighter = Instantiate(fireFighterPrefab, helipads[h].fireStationObj.GetComponentInChildren<fireStationDoor>().gameObject.transform.position, Quaternion.identity);

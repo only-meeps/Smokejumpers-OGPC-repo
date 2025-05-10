@@ -281,7 +281,7 @@ public class UIController : MonoBehaviour
             scoringObjects[i].SetActive(true);
         }
         mainScore.color = Color.clear;
-        mainScore.text = ((missionsCompleted * 200) + (citizensKilled * 200) + (citizensDiedToFire * 100) + (timesRespawned * 300)).ToString();
+        mainScore.text = ((missionsCompleted * 200) - (citizensKilled * 200) - (citizensDiedToFire * 100) - (timesRespawned * 5)).ToString();
 
         mainScoreText.color = Color.clear;
 
@@ -313,7 +313,7 @@ public class UIController : MonoBehaviour
 
 
         timesRespawnedText.color = Color.clear;
-        timesRespawnedText.text = "Citizens Died To Fire : " + timesRespawned.ToString();
+        timesRespawnedText.text = "Times Respawned : " + timesRespawned.ToString();
 
         respawnedBar.color = Color.clear;
 

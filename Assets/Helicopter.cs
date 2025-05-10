@@ -6,6 +6,8 @@ using System;
 using Unity.Cinemachine;
 using JetBrains.Annotations;
 using System.Linq;
+using Unity.VisualScripting;
+using UnityEngine.AI;
 
 public class Helicopter : MonoBehaviour
 {
@@ -23,6 +25,7 @@ public class Helicopter : MonoBehaviour
     private InputAction engineToggle;
     private InputAction restart;
     private InputAction pause;
+    public InputAction ejectPassengers;
     public Rigidbody rb;
     public float tiltLimiter;
     public float tiltSpeed;
@@ -96,6 +99,7 @@ public class Helicopter : MonoBehaviour
         down = inputs.General.Down;
         restart = inputs.General.Restart;
         pause = inputs.General.Pause;
+        ejectPassengers = inputs.General.Ejectpassengers;
         
         cinemachineCam = Instantiate(cameraPrefab).GetComponent<CinemachineCamera>();
         cinemachineCam.Follow = transform;
@@ -112,6 +116,7 @@ public class Helicopter : MonoBehaviour
     public void OnEnable()
     {
         inputs.General.Enable();
+        ejectPassengers.Enable();
         restart.Enable();
         pause.Enable();
         engineToggle.Enable();
@@ -127,6 +132,7 @@ public class Helicopter : MonoBehaviour
     public void OnDisable()
     {
         inputs.General.Disable();
+        ejectPassengers.Disable();
         restart.Disable();
         pause.Disable();
         engineToggle.Disable();
@@ -158,6 +164,30 @@ public class Helicopter : MonoBehaviour
     // Update is called once per frame
     public void FixedUpdate()
     {
+        if (ejectPassengers.IsPressed())
+        {
+            for (int f = 0; f < fireFighters; f++)
+            {
+                System.Random rnd = new System.Random();
+                GameObject fireFighter = Instantiate(fireFighterPrefab, entrances[rnd.Next(0, entrances.Count)].transform.position, Quaternion.identity);
+                fireFighter.GetComponent<FireFighter>().enabled = false;
+                fireFighter.GetComponent<NavMeshAgent>().enabled = false;
+                fireFighter.GetComponent<Rigidbody>().freezeRotation = false;
+                fireFighters--;
+                capacity--;
+            }
+            for (int f = 0; f < citizens; f++)
+            {
+                System.Random rnd = new System.Random();
+                GameObject citizen = Instantiate(citizenPrefab, entrances[rnd.Next(0, entrances.Count)].transform.position, Quaternion.identity);
+                citizen.GetComponent<Citizen>().enabled = false;
+                citizen.GetComponent<NavMeshAgent>().enabled = false;
+                citizen.GetComponent<Rigidbody>().freezeRotation = false;
+                citizens--;
+                capacity--;
+            }
+        }
+
         roterSoundSource.volume = PlayerPrefs.GetFloat("HeliFX");
         heliAudioSource.volume = PlayerPrefs.GetFloat("HeliFX");
         if (mapGenerator.waterHeight > transform.position.y && crashed == false)

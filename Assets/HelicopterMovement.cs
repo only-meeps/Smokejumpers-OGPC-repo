@@ -189,6 +189,15 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Eject passengers"",
+                    ""type"": ""Button"",
+                    ""id"": ""4174f204-676b-44b2-a06e-7f9d9984077d"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -422,6 +431,28 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
                     ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e4680573-fa8f-4ef2-9549-e05067cd7470"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Eject passengers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5b795140-3111-4330-a8da-82d8f431b5a4"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Eject passengers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -441,6 +472,7 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
         m_General_OnOff_Engine_Toggle = m_General.FindAction("On/Off_Engine_Toggle", throwIfNotFound: true);
         m_General_Restart = m_General.FindAction("Restart", throwIfNotFound: true);
         m_General_Pause = m_General.FindAction("Pause", throwIfNotFound: true);
+        m_General_Ejectpassengers = m_General.FindAction("Eject passengers", throwIfNotFound: true);
     }
 
     ~@HelicopterMovement()
@@ -532,6 +564,7 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
     private readonly InputAction m_General_OnOff_Engine_Toggle;
     private readonly InputAction m_General_Restart;
     private readonly InputAction m_General_Pause;
+    private readonly InputAction m_General_Ejectpassengers;
     /// <summary>
     /// Provides access to input actions defined in input action map "General".
     /// </summary>
@@ -587,6 +620,10 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "General/Pause".
         /// </summary>
         public InputAction @Pause => m_Wrapper.m_General_Pause;
+        /// <summary>
+        /// Provides access to the underlying input action "General/Ejectpassengers".
+        /// </summary>
+        public InputAction @Ejectpassengers => m_Wrapper.m_General_Ejectpassengers;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -646,6 +683,9 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
             @Pause.started += instance.OnPause;
             @Pause.performed += instance.OnPause;
             @Pause.canceled += instance.OnPause;
+            @Ejectpassengers.started += instance.OnEjectpassengers;
+            @Ejectpassengers.performed += instance.OnEjectpassengers;
+            @Ejectpassengers.canceled += instance.OnEjectpassengers;
         }
 
         /// <summary>
@@ -690,6 +730,9 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
             @Pause.started -= instance.OnPause;
             @Pause.performed -= instance.OnPause;
             @Pause.canceled -= instance.OnPause;
+            @Ejectpassengers.started -= instance.OnEjectpassengers;
+            @Ejectpassengers.performed -= instance.OnEjectpassengers;
+            @Ejectpassengers.canceled -= instance.OnEjectpassengers;
         }
 
         /// <summary>
@@ -807,5 +850,12 @@ public partial class @HelicopterMovement: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnPause(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Eject passengers" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnEjectpassengers(InputAction.CallbackContext context);
     }
 }
