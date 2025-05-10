@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System;
 using Unity.Cinemachine;
 using JetBrains.Annotations;
+using System.Linq;
 
 public class Helicopter : MonoBehaviour
 {
@@ -199,6 +200,7 @@ public class Helicopter : MonoBehaviour
             {
                 if (heliCollider.touching && mapGenerator.fireFighterDropOffPoints[i].Contains(new Vector2(transform.position.x, transform.position.z)))
                 {
+
                     for (int f = 0; f < fireFighters; f++)
                     {
                         System.Random rnd = new System.Random();
@@ -207,7 +209,14 @@ public class Helicopter : MonoBehaviour
                         capacity--;
                         fireFighters--;
                     }
-
+                    for(int f = 0; f < GameObject.FindObjectsByType<Mission>(FindObjectsSortMode.None).Length; f++)
+                    {
+                        if (FindObjectsByType<Mission>(FindObjectsSortMode.None)[f].missionTag == "FireFighterDropOffPoint")
+                        {
+                            FindObjectsByType<Mission>(FindObjectsSortMode.None)[f].missionObj.SetActive(false);
+                            mapGenerator.assaignedMissions.Remove(FindObjectsByType<Mission>(FindObjectsSortMode.None)[f]);
+                        }
+                    }
                 }
             }
 
