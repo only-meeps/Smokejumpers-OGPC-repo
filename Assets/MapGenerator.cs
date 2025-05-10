@@ -71,11 +71,15 @@ public class MapGenerator : MonoBehaviour
     public bool titleScreen;
     public GameObject titleScreenUIObj;
     public GameObject gameUIObj;
-
+    public GameObject fireFighterPrefab;
+    public Material fireFighterDropOffPointMat;
+    public Sprite fireFighterDropOffPointMarker;
+    public List<Rect> fireFighterDropOffPoints = new List<Rect>();
+    public List<float> fireFighterDropOffPointsHeight = new List<float>();
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Awake()
     {
-
+        mapSize = rnd.Next(10, 25);
         drawDistance = PlayerPrefs.GetFloat("DrawDistance");
         chunkDrawDistance = PlayerPrefs.GetFloat("TileDrawDistance");
         gameUIObj.SetActive(false);
@@ -83,7 +87,6 @@ public class MapGenerator : MonoBehaviour
         Mission citizenPickupMission = new Mission();
 
         citizenPickupMission.markerSprite = townIcon;
-        Debug.Log(citizenPickupMission.markerSprite.name);
         citizenPickupMission.missionTitle = "Pickup Citizens";
         citizenPickupMission.missionDescription = "Pickup citizens and bring them to a hospital";
         citizenPickupMission.missionTag = "CitizenPickupPoint";
@@ -91,7 +94,17 @@ public class MapGenerator : MonoBehaviour
         citizenPickupMission.afterFire = false;
 
         possibleMissions.Add(citizenPickupMission);
-        
+
+        Mission FireFighterMission = new Mission();
+
+        FireFighterMission.markerSprite = fireFighterDropOffPointMarker;
+        FireFighterMission.missionTitle = "Drop off Fire Fighters";
+        FireFighterMission.missionDescription = "Pickup fire fighter from a fire station and bring them to a dropoff point";
+        FireFighterMission.missionTag = "FireFighterDropOffPoint";
+        FireFighterMission.pointsGainedFromMission = 25;
+        FireFighterMission.afterFire = false;
+
+        possibleMissions.Add(FireFighterMission);
         meshHeightMultiplier = rnd.Next(24, 40);
         meshHeightCurve = new AnimationCurve();
         meshHeightCurve.AddKey(0, 0);
@@ -107,7 +120,6 @@ public class MapGenerator : MonoBehaviour
         waterHeight = waterNoiseHeight * meshHeightMultiplier;
         water.transform.position = new Vector3(0, waterHeight, 0);
         water.transform.localScale = new Vector3(mapSize * chunkSize, 1, mapSize * chunkSize);
-        navSurface = GameObject.FindFirstObjectByType<NavMeshSurface>();
         //Create chunk gameobjects and gameobject component lists
         chunks = new GameObject[mapSize, mapSize];
         display.meshFilter = new MeshFilter[mapSize, mapSize];
@@ -189,6 +201,27 @@ public class MapGenerator : MonoBehaviour
         }
 
 
+        int fireFighterDropOffPointMissions = rnd.Next(0, 2);
+        List<float> fireFighterDropOffPointsNoiseHeight = new List<float>();
+        for(int i = 0; i < fireFighterDropOffPointMissions; i++)
+        {
+            Rect fireFighterDropOffPoint = new Rect();
+            fireFighterDropOffPoint.x = rnd.Next(chunkSize, (mapSize - 1) * chunkSize);
+            fireFighterDropOffPoint.y = rnd.Next(-((mapSize + -1) * chunkSize), -chunkSize);
+
+            fireFighterDropOffPoint.width = 4;
+            fireFighterDropOffPoint.height = 4;
+
+            fireFighterDropOffPointsNoiseHeight.Add(0);
+            fireFighterDropOffPointsHeight.Add(0);
+            fireFighterDropOffPoints.Add(fireFighterDropOffPoint);
+
+            GameObject fireFighterDropoffPointObj = new GameObject();
+            fireFighterDropoffPointObj.transform.position = new Vector3(fireFighterDropOffPoint.x, 0, fireFighterDropOffPoint.y);
+            Marker fireFighterPickupPointMarker = fireFighterDropoffPointObj.AddComponent<Marker>();
+            fireFighterPickupPointMarker.icon = fireFighterDropOffPointMarker;
+            UIController.AddMarker(fireFighterPickupPointMarker);
+        }
 
         //Pick number of towns
         int townCount = rnd.Next(3, 6);
@@ -279,6 +312,7 @@ public class MapGenerator : MonoBehaviour
                             }
                             else
                             {
+                                Debug.Log("Terrain Height " + meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier + " Water Height " + waterHeight);
                                 if (helipads[h].spawnHelipad)
                                 {
                                     player.transform.position = new Vector3(player.transform.position.x, helipads[h].position.y + 2, player.transform.position.z);
@@ -288,6 +322,31 @@ public class MapGenerator : MonoBehaviour
 
                         }
                         globalNoiseMap[x, y] = helipads[h].helipadNoiseHeight;
+                    }
+                }
+                for(int i = 0; i < fireFighterDropOffPointMissions;  i++)
+                {
+                    if (fireFighterDropOffPoints[i].Contains(new Vector2(percent.x, -percent.y)))
+                    {
+                        //If the townheight has not been set yet, then set the townheight to the terrain height, else set the terrain height to the townheight
+                        if (fireFighterDropOffPointsHeight[i] == 0)
+                        {
+                            if (meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier <= waterHeight)
+                            {
+                                fireFighterDropOffPointsHeight[i] = waterHeight;
+                                fireFighterDropOffPointsNoiseHeight[i] = waterNoiseHeight;
+                            }
+                            else
+                            {
+                                fireFighterDropOffPointsHeight[i] = meshHeightCurve.Evaluate(globalNoiseMap[x, y]) * meshHeightMultiplier;
+                                fireFighterDropOffPointsNoiseHeight[i] = globalNoiseMap[x, y];
+                            }
+
+                        }
+                        else
+                        {
+                            globalNoiseMap[x, y] = fireFighterDropOffPointsNoiseHeight[i];
+                        }
                     }
                 }
 
@@ -344,7 +403,10 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-
+        for(int i = 0; i < fireFighterDropOffPointMissions; i++)
+        {
+            DrawRect(fireFighterDropOffPoints[i], fireFighterDropOffPointsHeight[i], fireFighterDropOffPointMat, .1f, "fire fighter dropoff point " + i.ToString(), "FireFighterDropOffPoint");
+        }
         for (int i = 0; i < towns.Count; i++)
         {
             //Draw town pickup zone
@@ -490,36 +552,40 @@ public class MapGenerator : MonoBehaviour
         for(int i = 0; i < possibleMissions.Count; i++)
         {
             int amountOfMissionOnMap = GameObject.FindGameObjectsWithTag(possibleMissions[i].missionTag).Length;
-            for(int j = 0; j < rnd.Next(1, amountOfMissionOnMap); j++)
+            if(amountOfMissionOnMap > 0)
             {
-                GameObject missionGameObj = Instantiate(missionPrefab);
-                Mission mission = missionGameObj.GetComponent<Mission>();
-
-                missionGameObj.transform.parent = missionVerticalLayoutGroup.transform;
-                mission.missionIconImage.sprite = possibleMissions[i].markerSprite;
-                mission.missionTitleText.text = possibleMissions[i].missionTitle;
-                mission.missionDescriptionText.text = possibleMissions[i].missionDescription;
-                mission.missionTag = possibleMissions[i].missionTag;
-                mission.pointsGainedFromMission = possibleMissions[i].pointsGainedFromMission;
-
-
-                if(mission.missionTag == "CitizenPickupPoint")
+                for (int j = 0; j < rnd.Next(1, amountOfMissionOnMap); j++)
                 {
-                    towns[j].townLinkedMission = mission;
-                    GameObject townOBJ = new GameObject();
-                    townOBJ.name = "Town " + i;
-                    townOBJ.transform.position = new Vector3(towns[j].town.x, 0, towns[j].town.y);
-                    Marker townMarker = townOBJ.AddComponent<Marker>();
-                    townMarker.icon = townIcon;
-                    UIController.AddMarker(townMarker);
-                    towns[j].townMarker = townMarker;
+                    GameObject missionGameObj = Instantiate(missionPrefab);
+                    Mission mission = missionGameObj.GetComponent<Mission>();
+
+                    missionGameObj.transform.parent = missionVerticalLayoutGroup.transform;
+                    mission.missionIconImage.sprite = possibleMissions[i].markerSprite;
+                    mission.missionTitleText.text = possibleMissions[i].missionTitle;
+                    mission.missionDescriptionText.text = possibleMissions[i].missionDescription;
+                    mission.missionTag = possibleMissions[i].missionTag;
+                    mission.pointsGainedFromMission = possibleMissions[i].pointsGainedFromMission;
+
+
+                    if (mission.missionTag == "CitizenPickupPoint")
+                    {
+                        towns[j].townLinkedMission = mission;
+                        GameObject townOBJ = new GameObject();
+                        townOBJ.name = "Town " + i;
+                        townOBJ.transform.position = new Vector3(towns[j].town.x, 0, towns[j].town.y);
+                        Marker townMarker = townOBJ.AddComponent<Marker>();
+                        townMarker.icon = townIcon;
+                        UIController.AddMarker(townMarker);
+                        towns[j].townMarker = townMarker;
+                    }
+
+
+                    mission.missionObj = GameObject.FindGameObjectsWithTag(possibleMissions[i].missionTag)[j];
+                    assaignedMissions.Add(mission);
+                    Debug.Log(assaignedMissions[j].missionTitle);
                 }
-
-
-                mission.missionObj = GameObject.FindGameObjectsWithTag(possibleMissions[i].missionTag)[j];
-                assaignedMissions.Add(mission);
-                Debug.Log(assaignedMissions[j].missionTitle);
             }
+
             
         }
 
@@ -605,6 +671,18 @@ public class MapGenerator : MonoBehaviour
         }
         if (titleScreen == false)
         {
+            for(int h = 0; h < helipads.Count; h++)
+            {
+                if (player.GetComponentInParent<HeliCollider>().touchingObj == helipads[h].helipad)
+                {
+                    if (helipads[h].fireStation && helipads[h].fireFightersDeployed <= 6)
+                    {
+                        helipads[h].fireFightersDeployed++;
+                        Instantiate(fireFighterPrefab, helipads[h].fireStationObj.GetComponentInChildren<fireStationDoor>().gameObject.transform.position, Quaternion.identity);
+                    }
+                    //Spawn firefighters
+                }
+            }
             for (int i = 0; i < towns.Count; i++)
             {
                 if (towns[i].townCitizenCount == 0 && towns[i].townLinkedMission.isActiveAndEnabled)

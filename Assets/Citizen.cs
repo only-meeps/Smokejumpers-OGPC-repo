@@ -136,12 +136,12 @@ public class Citizen : MonoBehaviour
                         }
                     }
                     agent.SetDestination(closestEntrance.transform.position);
-                    animator.speed = 1;
+                    animator.speed = 3;
                 }
                 else
                 {
                     agent.SetDestination(startingPos);
-                    animator.speed = 1;
+                    animator.speed = 3;
                 }
 
             }
@@ -153,6 +153,7 @@ public class Citizen : MonoBehaviour
             {
                 helicopter.capacity++;
                 MapGenerator.towns[townIndex].townCitizenCount--;
+                helicopter.citizens++;
                 MapGenerator.towns[townIndex].townPickedUpCitizenCount++;
                 Destroy(this.gameObject);
             }
@@ -162,7 +163,6 @@ public class Citizen : MonoBehaviour
                 helicopter.citizensKilled++;
                 MapGenerator.towns[townIndex].townCitizenCount--;
                 MapGenerator.towns[townIndex].townDeadCitizenCount++;
-
                 Destroy(this.gameObject);
             }
         }

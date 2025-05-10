@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2396299096312113063}
   - component: {fileID: 8216370427556206672}
   - component: {fileID: 1945692914765582410}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: blades
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -249,7 +249,7 @@ GameObject:
   - component: {fileID: 2374608309032871527}
   - component: {fileID: 8070755002286948461}
   - component: {fileID: 8308872883761711941}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: tail_rotor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -338,7 +338,7 @@ GameObject:
   - component: {fileID: 3656474081483062326}
   - component: {fileID: 3381088432415171592}
   - component: {fileID: 3275543176786664791}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: helicopter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -513,8 +513,11 @@ MonoBehaviour:
   - {fileID: 2204943925747373288}
   - {fileID: 6815017635588317337}
   capacity: 0
+  fireFighters: 0
+  citizens: 0
   maxCapacity: 6
   citizenPrefab: {fileID: 4002477286547539170, guid: d8dbcdf561757d546b4cd76f1930199f, type: 3}
+  fireFighterPrefab: {fileID: 1617880779285773233, guid: c0324db480a5b7149b17c6c79340c75a, type: 3}
   fuel: 10000
   fuelEfficency: 0
   explosionPrefab: {fileID: 1753776141928924, guid: 045d5fbbf8161ea478959fe3c8e41207, type: 3}
@@ -527,9 +530,11 @@ MonoBehaviour:
   roterSoundSource: {fileID: 1945692914765582410}
   heliAnimator: {fileID: 1815906277237698935}
   titleScreenFollowOffset: {x: 4, y: 4, z: 5}
-  gameFollowOffset: {x: 0, y: 50, z: 0.6}
+  gameFollowOffset: {x: 0, y: 30, z: 0.6}
   titleScreenFollowRot: {x: 25, y: -158, z: 0}
   gameFollowRot: {x: 90, y: 0, z: 0}
+  pauseUI: {fileID: 0}
+  fracturedHeliObjs: []
 --- !u!82 &2954957255121008816
 AudioSource:
   m_ObjectHideFlags: 0

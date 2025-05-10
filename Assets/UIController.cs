@@ -46,6 +46,8 @@ public class UIController : MonoBehaviour
     public Slider shadowQuality;
     public Slider shadowDrawDistance;
 
+    public GameObject pauseUI;
+
     public TMP_Dropdown screenRes;
 
     List<Marker> markers = new List<Marker>();
@@ -71,7 +73,7 @@ public class UIController : MonoBehaviour
             PlayerPrefs.SetFloat("TileDrawDistance", 200);
         }
         helicopter = GameObject.FindObjectsByType<Helicopter>(FindObjectsSortMode.None)[0];
-        
+        helicopter.pauseUI = pauseUI;
         for(int i = 0; i < scoringObjects.Count; i++)
         {
             scoringObjects[i].SetActive(false);
@@ -100,6 +102,7 @@ public class UIController : MonoBehaviour
     }
     public void MainMenu()
     {
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     public void ChangeGraphicsSettings()

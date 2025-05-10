@@ -12,6 +12,8 @@ public class Helipad : MonoBehaviour
     public bool containerPickupPoint;
     public bool spawnHelipad;
 
+    public float fireFightersDeployed;
+
     public GameObject fireStationObj;
     public GameObject hospitalObj;
     public GameObject gasStationObj;

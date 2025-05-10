@@ -240,6 +240,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8976304668882629408}
   - component: {fileID: 5913184078260714938}
+  - component: {fileID: 2408540108666092407}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Fire station door
@@ -283,3 +284,15 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.8964255, y: 1.6100116, z: 0.8500595}
   m_Center: {x: -0.058972478, y: 0.3050058, z: -0.074970245}
+--- !u!114 &2408540108666092407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7395055757230354075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba8a55899ed139c4e88d3df027035631, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

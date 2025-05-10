@@ -51,8 +51,11 @@ public class Helicopter : MonoBehaviour
     public int citizensLeft;
     public List<GameObject> entrances = new List<GameObject>();
     public int capacity;
+    public int fireFighters;
+    public int citizens;
     public int maxCapacity;
     public GameObject citizenPrefab;
+    public GameObject fireFighterPrefab;
     public float fuel;
     public float fuelEfficency;
     public GameObject explosionPrefab;
@@ -69,10 +72,11 @@ public class Helicopter : MonoBehaviour
     public Animator heliAnimator;
     bool titleScreen;
     public Vector3 titleScreenFollowOffset = new Vector3(4,4,5 ); 
-    public Vector3 gameFollowOffset = new Vector3(0,50,0.6f);
+    public Vector3 gameFollowOffset = new Vector3(0,30,0.6f);
     public Vector3 titleScreenFollowRot = new Vector3(25,-158,0);
     public Vector3 gameFollowRot = new Vector3(90,0,0);
     public GameObject pauseUI;
+    public List<GameObject> fracturedHeliObjs;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -95,8 +99,6 @@ public class Helicopter : MonoBehaviour
         
         cinemachineCam = Instantiate(cameraPrefab).GetComponent<CinemachineCamera>();
         cinemachineCam.Follow = transform;
-
-        pauseUI = GameObject.FindGameObjectWithTag("PauseMenu");
 
         roterSoundSource.clip = roterSounds;
         roterSoundSource.loop = true;
@@ -174,7 +176,7 @@ public class Helicopter : MonoBehaviour
 
             if (heliCollider.touchingObj.tag == "helipad" && heliCollider.touchingObj.GetComponent<Helipad>().hospital)
             {
-                for (int i = 0; i < capacity; i++)
+                for (int i = 0; i < citizens; i++)
                 {
                     System.Random rnd = new System.Random();
                     Citizen citizen = Instantiate(citizenPrefab, entrances[rnd.Next(0, entrances.Count)].transform.position, Quaternion.identity).GetComponent<Citizen>();
@@ -189,9 +191,27 @@ public class Helicopter : MonoBehaviour
                     }
                     citizen.manuallyAssignedTarget = closestHospitalDoor;
                     citizen.alreadyOnHeli = true;
+                    capacity--;
+                    citizens--;
                 }
-                capacity = 0;
+
             }
+            for(int i = 0; i < mapGenerator.fireFighterDropOffPoints.Count; i++)
+            {
+                if (heliCollider.touching && mapGenerator.fireFighterDropOffPoints[i].Contains(new Vector2(transform.position.x, transform.position.z)))
+                {
+                    for (int f = 0; f < fireFighters; f++)
+                    {
+                        System.Random rnd = new System.Random();
+                        FireFighter fireFighter = Instantiate(fireFighterPrefab, entrances[rnd.Next(0, entrances.Count)].transform.position, Quaternion.identity).GetComponent<FireFighter>();
+                        fireFighter.alreadyOnHeli = true;
+                        capacity--;
+                        fireFighters--;
+                    }
+
+                }
+            }
+
         }
         if (transform.eulerAngles.x > 180)
         {
@@ -422,7 +442,7 @@ public class Helicopter : MonoBehaviour
     }
     public void Update()
     {
-        if (pause.IsPressed())
+        if (pause.WasPressedThisFrame())
         {
             if (Time.timeScale == 0)
             {
@@ -434,6 +454,10 @@ public class Helicopter : MonoBehaviour
                 pauseUI.SetActive(true);
                 Time.timeScale = 0f;
             }
+        }
+        if(fracturedHeliObjs.Count > 2)
+        {
+            Destroy(fracturedHeliObjs[0]);
         }
     }
     public void Respawn()
@@ -451,6 +475,8 @@ public class Helicopter : MonoBehaviour
         crashed = false;
         mapGenerator.timesRespawned++;
         capacity = 0;
+        citizens = 0;
+        fireFighters = 0;
         fuel = initialFuel;
         transform.position = spawnPoint;
         rb.transform.position = spawnPoint;
@@ -476,6 +502,7 @@ public class Helicopter : MonoBehaviour
             gameObject.GetComponentsInChildren<MeshRenderer>()[i].enabled = false;
         }
         fracturedHeli.transform.eulerAngles = gameObject.transform.eulerAngles;
+        fracturedHeliObjs.Add(fracturedHeli);
         heliAudioSource.Stop();
         heliAudioSource.clip = crashSound;
         heliAudioSource.loop = false;
