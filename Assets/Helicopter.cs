@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System;
 using Unity.Cinemachine;
 using JetBrains.Annotations;
-using UnityEditor.Tilemaps;
-using UnityEditor;
 
 public class Helicopter : MonoBehaviour
 {
