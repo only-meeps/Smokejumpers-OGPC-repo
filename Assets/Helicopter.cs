@@ -209,18 +209,13 @@ public class Helicopter : MonoBehaviour
                         capacity--;
                         fireFighters--;
                     }
-                    for(int f = 0; f < GameObject.FindObjectsByType<Mission>(FindObjectsSortMode.None).Length; f++)
-                    {
-                        if (FindObjectsByType<Mission>(FindObjectsSortMode.None)[f].missionTag == "FireFighterDropOffPoint")
-                        {
-                            FindObjectsByType<Mission>(FindObjectsSortMode.None)[f].missionObj.SetActive(false);
-                            mapGenerator.assaignedMissions.Remove(FindObjectsByType<Mission>(FindObjectsSortMode.None)[f]);
-                        }
-                    }
+
                 }
             }
 
+
         }
+
         if (transform.eulerAngles.x > 180)
         {
             xAngle = (transform.eulerAngles.x - 360);

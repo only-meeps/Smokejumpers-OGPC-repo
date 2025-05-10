@@ -18,6 +18,8 @@ public class FireFighter : MonoBehaviour
     public Rigidbody rb;
     System.Random rnd = new System.Random();
     public Animator animator;
+    public GameObject onTriggerObj;
+    public int helipadIndex;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -27,6 +29,16 @@ public class FireFighter : MonoBehaviour
         MapGenerator = FindObjectsByType<MapGenerator>(FindObjectsSortMode.None)[0];
         if (alreadyOnHeli)
         {
+            for (int f = 0; f < GameObject.FindObjectsByType<Mission>(FindObjectsSortMode.None).Length; f++)
+            {
+                if (FindObjectsByType<Mission>(FindObjectsSortMode.None)[f].missionTag == "FireFighterDropOffPoint")
+                {
+
+                    FindObjectsByType<Mission>(FindObjectsSortMode.None)[f].missionObj.SetActive(false);
+                    MapGenerator.assaignedMissions.Remove(FindObjectsByType<Mission>(FindObjectsSortMode.None)[f]);
+                    break;
+                }
+            }
             finalPos = new Vector3(Random.Range(MapGenerator.fireFighterDropOffPoints[dropOffPointIndex].x, MapGenerator.fireFighterDropOffPoints[dropOffPointIndex].x + MapGenerator.fireFighterDropOffPoints[dropOffPointIndex].width), MapGenerator.fireFighterDropOffPointsHeight[dropOffPointIndex], Random.Range(MapGenerator.fireFighterDropOffPoints[dropOffPointIndex].y, MapGenerator.fireFighterDropOffPoints[dropOffPointIndex].y + MapGenerator.fireFighterDropOffPoints[dropOffPointIndex].height));
         }
     }
@@ -73,12 +85,14 @@ public class FireFighter : MonoBehaviour
         }
         if(!helicopter.touching && touchingFireStationDoor)
         {
+            MapGenerator.helipads[helipadIndex].fireFightersDeployed--;
             Destroy(this.gameObject);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        onTriggerObj = other.gameObject;
         if (other.gameObject.tag == "Door")
         {
             touchingDoor = true;
