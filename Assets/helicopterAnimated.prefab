@@ -518,7 +518,7 @@ MonoBehaviour:
   maxCapacity: 6
   citizenPrefab: {fileID: 4002477286547539170, guid: d8dbcdf561757d546b4cd76f1930199f, type: 3}
   fireFighterPrefab: {fileID: 1617880779285773233, guid: c0324db480a5b7149b17c6c79340c75a, type: 3}
-  fuel: 10000
+  fuel: 15000
   fuelEfficency: 0
   explosionPrefab: {fileID: 1753776141928924, guid: 045d5fbbf8161ea478959fe3c8e41207, type: 3}
   fracturedHeliPrefab: {fileID: 2153150926561163238, guid: 220dd77a55c415745a5559cadc4aaaeb, type: 3}

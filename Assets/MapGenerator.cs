@@ -82,7 +82,7 @@ public class MapGenerator : MonoBehaviour
         {
             PlayerPrefs.SetInt("Seed", rnd.Next(0, 1000));
         }
-
+        seed = PlayerPrefs.GetInt("Seed");
         rnd = new System.Random(seed);
         UnityEngine.Random.InitState(seed);
         mapSize = rnd.Next(10, 25);

@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
 
 public class UIController : MonoBehaviour
 {
@@ -73,9 +74,9 @@ public class UIController : MonoBehaviour
         screenRes.value = PlayerPrefs.GetInt("ScreenRes");
         treeDrawDistance.value = PlayerPrefs.GetFloat("DrawDistance");
         tileDrawDistance.value = PlayerPrefs.GetFloat("TileDrawDistance");
-        if(PlayerPrefs.GetInt("FirstTime") == 0)
+        if(PlayerPrefs.GetInt("FirstTime") == 0 || PlayerPrefs.GetInt("FirstTime") == 1)
         {
-            PlayerPrefs.SetFloat("FirstTime", 1);
+            PlayerPrefs.SetFloat("FirstTime", 2);
             PlayerPrefs.SetFloat("HeliFX", 100);
             PlayerPrefs.SetFloat("ShadowDrawDistance", 50);
             PlayerPrefs.SetFloat("ShadowResolution", 1);
@@ -98,13 +99,24 @@ public class UIController : MonoBehaviour
     }
     public void levelNumberUp()
     {
-        levelNumber++;
-        levelText.text = levelNumber.ToString();
+        if(levelNumber <= Int32.MaxValue)
+        {
+            levelNumber++;
+            levelText.text = levelNumber.ToString();
+        }
+
+    }
+    public void BugReport()
+    {
+        Application.OpenURL("https://docs.google.com/forms/d/e/1FAIpQLSdvjgxbda6eEQ3YU5IOB73XdZUm6Xmi6hVMK9SrB4BHKuQRdg/viewform?usp=dialog");
     }
     public void levelNumberDown()
     {
-        levelNumber--;
-        levelText.text = levelNumber.ToString();
+        if(levelNumber >= 0)
+        {
+            levelNumber--;
+            levelText.text = levelNumber.ToString();
+        }
     }
     public void SelectLevelNumber()
     {
