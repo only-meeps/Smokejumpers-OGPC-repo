@@ -122,6 +122,7 @@ public class UIController : MonoBehaviour
     {
         PlayerPrefs.SetInt("ManuallyAssaignedLevel", 1);
         PlayerPrefs.SetInt("Seed", levelNumber);
+        SceneManager.LoadScene("TerrainGenTest");
     }
     public void levelSelect()
     {
