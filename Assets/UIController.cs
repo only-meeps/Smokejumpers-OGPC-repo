@@ -53,6 +53,7 @@ public class UIController : MonoBehaviour
     public TMP_Text levelText;
 
     public GameObject pauseUI;
+    public GameObject loadingScreen;
 
     public TMP_Dropdown screenRes;
 
@@ -65,6 +66,7 @@ public class UIController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        loadingScreen.SetActive(false);
         levelNumber = PlayerPrefs.GetInt("Seed");
         levelText.text = PlayerPrefs.GetInt("Seed").ToString();
         scoringUI.SetActive(false);
@@ -120,6 +122,7 @@ public class UIController : MonoBehaviour
     }
     public void SelectLevelNumber()
     {
+        loadingScreen.SetActive(true);
         PlayerPrefs.SetInt("ManuallyAssaignedLevel", 1);
         PlayerPrefs.SetInt("Seed", levelNumber);
         SceneManager.LoadScene("TerrainGenTest");

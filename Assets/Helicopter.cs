@@ -74,6 +74,8 @@ public class Helicopter : MonoBehaviour
     public Vector3 gameFollowRot = new Vector3(90,0,0);
     public GameObject pauseUI;
     public List<GameObject> fracturedHeliObjs;
+    public AnimationCurve fuelCurve;
+    public float maxHeight = 90;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -230,7 +232,7 @@ public class Helicopter : MonoBehaviour
         Helipad helipad;
         if(heliCollider.touching == false && !titleScreen)
         {
-            fuelEfficency = transform.position.y / 5;
+            fuelEfficency = fuelCurve.Evaluate(transform.position.y / maxHeight) * 4;
         }
         else if(heliCollider.touchingObj.TryGetComponent<Helipad>(out helipad) && fuel < initialFuel && heliCollider.touchingObj)
         {

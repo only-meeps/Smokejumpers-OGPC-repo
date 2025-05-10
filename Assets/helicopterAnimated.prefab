@@ -535,6 +535,49 @@ MonoBehaviour:
   gameFollowRot: {x: 90, y: 0, z: 0}
   pauseUI: {fileID: 0}
   fracturedHeliObjs: []
+  fuelCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.4451873
+      outSlope: 0.4451873
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.37059963
+      value: 0.16498625
+      inSlope: 0.7366405
+      outSlope: 0.7366405
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.11183211
+      outWeight: 0.25036713
+    - serializedVersion: 3
+      time: 0.5773945
+      value: 1.0846496
+      inSlope: 0.6407015
+      outSlope: 0.6407015
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.14748329
+    - serializedVersion: 3
+      time: 0.98021173
+      value: 2.4723015
+      inSlope: 3.4448671
+      outSlope: 3.4448671
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  maxHeight: 90
 --- !u!82 &2954957255121008816
 AudioSource:
   m_ObjectHideFlags: 0
