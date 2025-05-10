@@ -518,7 +518,7 @@ MonoBehaviour:
   maxCapacity: 6
   citizenPrefab: {fileID: 4002477286547539170, guid: d8dbcdf561757d546b4cd76f1930199f, type: 3}
   fireFighterPrefab: {fileID: 1617880779285773233, guid: c0324db480a5b7149b17c6c79340c75a, type: 3}
-  fuel: 15000
+  fuel: 10000
   fuelEfficency: 0
   explosionPrefab: {fileID: 1753776141928924, guid: 045d5fbbf8161ea478959fe3c8e41207, type: 3}
   fracturedHeliPrefab: {fileID: 2153150926561163238, guid: 220dd77a55c415745a5559cadc4aaaeb, type: 3}
@@ -541,14 +541,14 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0.4451873
-      outSlope: 0.4451873
+      inSlope: 0.6239701
+      outSlope: 0.6239701
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.37059963
+      time: 0.2644137
       value: 0.16498625
       inSlope: 0.7366405
       outSlope: 0.7366405
@@ -557,8 +557,8 @@ MonoBehaviour:
       inWeight: 0.11183211
       outWeight: 0.25036713
     - serializedVersion: 3
-      time: 0.5773945
-      value: 1.0846496
+      time: 0.5365467
+      value: 1.0729918
       inSlope: 0.6407015
       outSlope: 0.6407015
       tangentMode: 0
@@ -568,8 +568,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0.98021173
       value: 2.4723015
-      inSlope: 3.4448671
-      outSlope: 3.4448671
+      inSlope: 3.1539779
+      outSlope: 3.1539779
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334

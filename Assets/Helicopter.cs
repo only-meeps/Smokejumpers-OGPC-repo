@@ -457,6 +457,7 @@ public class Helicopter : MonoBehaviour
         if(fracturedHeliObjs.Count > 2)
         {
             Destroy(fracturedHeliObjs[0]);
+            fracturedHeliObjs.RemoveAt(0);
         }
     }
     public void Respawn()
