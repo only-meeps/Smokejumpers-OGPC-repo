@@ -18,7 +18,7 @@ public class NoiseData : UpdatableData
     public int seed;
     public Vector2 offset;
 
-
+#if UNITYEDITOR
     protected override void OnValidate()
     {
         if (lacunarity < 1)
@@ -32,5 +32,5 @@ public class NoiseData : UpdatableData
 
         base.OnValidate();
     }
-
+#endif
 }

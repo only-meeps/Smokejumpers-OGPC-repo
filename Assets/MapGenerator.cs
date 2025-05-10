@@ -73,9 +73,18 @@ public class MapGenerator : MonoBehaviour
     public Sprite fireFighterDropOffPointMarker;
     public List<Rect> fireFighterDropOffPoints = new List<Rect>();
     public List<float> fireFighterDropOffPointsHeight = new List<float>();
+    public int seed;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Awake()
     {
+        Time.timeScale = 1f;
+        if(PlayerPrefs.GetInt("ManuallyAssaignedLevel") == 0)
+        {
+            PlayerPrefs.SetInt("Seed", rnd.Next(0, 1000));
+        }
+
+        rnd = new System.Random(seed);
+        UnityEngine.Random.InitState(seed);
         mapSize = rnd.Next(10, 25);
         drawDistance = PlayerPrefs.GetFloat("DrawDistance");
         chunkDrawDistance = PlayerPrefs.GetFloat("TileDrawDistance");
@@ -274,7 +283,7 @@ public class MapGenerator : MonoBehaviour
         }
 
         //Create a global noise map for all chunks, making sure to generate an extra bit for the missing bits of chunks (generate an extra 2 chunks)
-        float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap((mapSize + 1) * chunkSize, (mapSize + 1) * chunkSize, 1, noiseScale, octaves, persistance, lacunarity, new Vector2(0, 0), NoiseGeneration.NormalizeMode.Global);
+        float[,] globalNoiseMap = NoiseGeneration.GenerateNoiseMap((mapSize + 1) * chunkSize, (mapSize + 1) * chunkSize, seed, noiseScale, octaves, persistance, lacunarity, new Vector2(0, 0), NoiseGeneration.NormalizeMode.Global);
 
         //Flatten terrain around structures such as towns
 
@@ -695,7 +704,7 @@ public class MapGenerator : MonoBehaviour
             if (assaignedMissions.Count == 0 && player.GetComponentInChildren<Helicopter>().capacity == 0 && startedScore == false)
             {
                 startedScore = true;
-                StartCoroutine(UIController.Scoring(missionsCompleted, player.GetComponentInChildren<Helicopter>().citizensKilled, player.GetComponentInChildren<Helicopter>().citizensDiedInFire, timesRespawned));
+                StartCoroutine(UIController.Scoring(missionsCompleted, player.GetComponentInChildren<Helicopter>().citizensKilled, player.GetComponentInChildren<Helicopter>().citizensDiedInFire, timesRespawned, seed));
             }
             /*
             if(townPosEditor != townPos)

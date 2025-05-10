@@ -40,15 +40,23 @@ public class UIController : MonoBehaviour
     public Slider helicopterFXSlider;
     public GameObject soundFXObj;
     public GameObject graphicsObj;
+    public GameObject scoringUI;
+    public GameObject gameUI;
+    public GameObject highScoreText;
 
     public Slider tileDrawDistance;
     public Slider treeDrawDistance;
     public Slider shadowQuality;
     public Slider shadowDrawDistance;
 
+    public TMP_Text levelText;
+
     public GameObject pauseUI;
 
     public TMP_Dropdown screenRes;
+
+    public GameObject levelSelectScreen;
+    public int levelNumber;
 
     List<Marker> markers = new List<Marker>();
 
@@ -56,6 +64,9 @@ public class UIController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        levelNumber = PlayerPrefs.GetInt("Seed");
+        levelText.text = PlayerPrefs.GetInt("Seed").ToString();
+        scoringUI.SetActive(false);
         helicopterFXSlider.value = PlayerPrefs.GetFloat("HeliFX");
         shadowDrawDistance.value = PlayerPrefs.GetFloat("ShadowDrawDistance");
         shadowQuality.value = PlayerPrefs.GetFloat("ShadowResolution");
@@ -85,7 +96,33 @@ public class UIController : MonoBehaviour
         capacityDisplay.maxValue = helicopter.maxCapacity;
         fuelEfficencyDisplay.maxValue = 4f;
     }
-
+    public void levelNumberUp()
+    {
+        levelNumber++;
+        levelText.text = levelNumber.ToString();
+    }
+    public void levelNumberDown()
+    {
+        levelNumber--;
+        levelText.text = levelNumber.ToString();
+    }
+    public void SelectLevelNumber()
+    {
+        PlayerPrefs.SetInt("ManuallyAssaignedLevel", 1);
+        PlayerPrefs.SetInt("Seed", levelNumber);
+    }
+    public void levelSelect()
+    {
+        Debug.Log("Level select");
+        if (levelSelectScreen.activeSelf)
+        {
+            levelSelectScreen.SetActive(false);
+        }
+        else
+        {
+            levelSelectScreen.SetActive(true);
+        }
+    }
     // Update is called once per frame
     void Update()
     {
@@ -100,6 +137,7 @@ public class UIController : MonoBehaviour
             marker.image.rectTransform.anchoredPosition = GetPosOnCompass(marker);
         }
     }
+
     public void MainMenu()
     {
         Time.timeScale = 1f;
@@ -198,7 +236,7 @@ public class UIController : MonoBehaviour
             settingsObj.SetActive(true);
         }
     }
-
+     
     public void Quit()
     {
         Application.Quit();
@@ -206,10 +244,22 @@ public class UIController : MonoBehaviour
 
     public void Credits()
     {
-
+        SceneManager.LoadScene("Credits");
     }
-    public IEnumerator Scoring(int missionsCompleted, int citizensKilled, int citizensDiedToFire, int timesRespawned)
+    public IEnumerator Scoring(int missionsCompleted, int citizensKilled, int citizensDiedToFire, int timesRespawned, int seed)
     {
+        scoringUI.SetActive(true);
+        gameUI.SetActive(false);
+        if(PlayerPrefs.GetInt("Level " + seed.ToString()) > (missionsCompleted * 200) + (citizensKilled * 200) + (citizensDiedToFire * 100) + (timesRespawned * 300))
+        {
+            highScoreText.SetActive(true);
+            PlayerPrefs.SetInt("Level " + seed.ToString(), (missionsCompleted * 200) + (citizensKilled * 200) + (citizensDiedToFire * 100) + (timesRespawned * 300));
+        }
+        else
+        {
+            highScoreText.SetActive(false);
+        }
+
         for (int i = 0; i < scoringObjects.Count; i++)
         {
             scoringObjects[i].SetActive(true);
