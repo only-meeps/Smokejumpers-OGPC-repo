@@ -798,7 +798,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Tile Draw Disrance
+  m_text: Tile Draw Distance
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fdc1807fc57f4614b94651b9887135ec, type: 2}
   m_sharedMaterial: {fileID: -5295270600449923231, guid: fdc1807fc57f4614b94651b9887135ec, type: 2}
@@ -9723,7 +9723,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Tree Draw Disrance
+  m_text: Tree Draw Distance
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fdc1807fc57f4614b94651b9887135ec, type: 2}
   m_sharedMaterial: {fileID: -5295270600449923231, guid: fdc1807fc57f4614b94651b9887135ec, type: 2}
