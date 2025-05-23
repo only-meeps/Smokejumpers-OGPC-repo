@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2396299096312113063}
   - component: {fileID: 8216370427556206672}
   - component: {fileID: 1945692914765582410}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: blades
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -249,7 +249,7 @@ GameObject:
   - component: {fileID: 2374608309032871527}
   - component: {fileID: 8070755002286948461}
   - component: {fileID: 8308872883761711941}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: tail_rotor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -489,22 +489,25 @@ MonoBehaviour:
   inputActions: {fileID: -944628639613478452, guid: 2adafa5ba58d4e54eba40aea907310b6, type: 3}
   spawnPoint: {x: 0, y: 0, z: 0}
   rb: {fileID: -6308474459797698622}
+  physicsHeli: {fileID: 5530724234494342489}
+  cinemachineCam: {fileID: 0}
+  boxCollider: {fileID: 0}
+  heliCollider: {fileID: 8901579766461122447}
+  heliAudioSource: {fileID: 2954957255121008816}
+  roterSoundSource: {fileID: 1945692914765582410}
   tiltLimiter: 15
   tiltSpeed: 50
   moveSpeedMultiplier: 2
   rotationSpeedMultiplier: 200
   upDownMultiplier: 20
-  physicsHeli: {fileID: 5530724234494342489}
-  cinemachineCam: {fileID: 0}
+  maxHeight: 90
+  cameraPrefab: {fileID: 3330891070104147626, guid: 45b68fe82143a9b41baf6f43641fa992, type: 3}
+  citizenPrefab: {fileID: 4002477286547539170, guid: d8dbcdf561757d546b4cd76f1930199f, type: 3}
+  fireFighterPrefab: {fileID: 1617880779285773233, guid: c0324db480a5b7149b17c6c79340c75a, type: 3}
+  explosionPrefab: {fileID: 1753776141928924, guid: 045d5fbbf8161ea478959fe3c8e41207, type: 3}
+  fracturedHeliPrefab: {fileID: 2153150926561163238, guid: 220dd77a55c415745a5559cadc4aaaeb, type: 3}
   engineOn: 1
   touching: 0
-  cameraPrefab: {fileID: 3330891070104147626, guid: 45b68fe82143a9b41baf6f43641fa992, type: 3}
-  cameraMoveSpeed: 1
-  boxCollider: {fileID: 0}
-  raycastInterval: 1e+13
-  altitudeTarget: 0
-  thrust: 15
-  heliCollider: {fileID: 8901579766461122447}
   citizensRescued: 0
   citizensKilled: 0
   citizensDiedInFire: 0
@@ -516,25 +519,8 @@ MonoBehaviour:
   fireFighters: 0
   citizens: 0
   maxCapacity: 6
-  citizenPrefab: {fileID: 4002477286547539170, guid: d8dbcdf561757d546b4cd76f1930199f, type: 3}
-  fireFighterPrefab: {fileID: 1617880779285773233, guid: c0324db480a5b7149b17c6c79340c75a, type: 3}
   fuel: 10000
   fuelEfficency: 0
-  explosionPrefab: {fileID: 1753776141928924, guid: 045d5fbbf8161ea478959fe3c8e41207, type: 3}
-  fracturedHeliPrefab: {fileID: 2153150926561163238, guid: 220dd77a55c415745a5559cadc4aaaeb, type: 3}
-  crashSound: {fileID: 8300000, guid: bed940f03e4e45d42beb6aa348d9b3a0, type: 3}
-  heliAudioSource: {fileID: 2954957255121008816}
-  mapGenerator: {fileID: 0}
-  fuelWarningSound: {fileID: 8300000, guid: f1855811f1a452d4f98f18b8a11600b3, type: 3}
-  roterSounds: {fileID: 8300000, guid: b0a3f52479f6ed746838ebfa9f598130, type: 3}
-  roterSoundSource: {fileID: 1945692914765582410}
-  heliAnimator: {fileID: 1815906277237698935}
-  titleScreenFollowOffset: {x: 4, y: 4, z: 5}
-  gameFollowOffset: {x: 0, y: 45, z: 0.6}
-  titleScreenFollowRot: {x: 25, y: -158, z: 0}
-  gameFollowRot: {x: 90, y: 0, z: 0}
-  pauseUI: {fileID: 0}
-  fracturedHeliObjs: []
   fuelCurve:
     serializedVersion: 2
     m_Curve:
@@ -577,7 +563,17 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  maxHeight: 90
+  crashSound: {fileID: 8300000, guid: bed940f03e4e45d42beb6aa348d9b3a0, type: 3}
+  mapGenerator: {fileID: 0}
+  fuelWarningSound: {fileID: 8300000, guid: f1855811f1a452d4f98f18b8a11600b3, type: 3}
+  roterSounds: {fileID: 8300000, guid: b0a3f52479f6ed746838ebfa9f598130, type: 3}
+  heliAnimator: {fileID: 1815906277237698935}
+  titleScreenFollowOffset: {x: 4, y: 4, z: 5}
+  gameFollowOffset: {x: 0, y: 45, z: 0.6}
+  titleScreenFollowRot: {x: 25, y: -158, z: 0}
+  gameFollowRot: {x: 90, y: 0, z: 0}
+  pauseUI: {fileID: 0}
+  fracturedHeliObjs: []
 --- !u!82 &2954957255121008816
 AudioSource:
   m_ObjectHideFlags: 0

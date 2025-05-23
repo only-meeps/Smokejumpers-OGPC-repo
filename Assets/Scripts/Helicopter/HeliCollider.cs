@@ -10,7 +10,7 @@ public class HeliCollider : MonoBehaviour
     private GameObject collisionEnteredGameOBJ;
     private void OnCollisionStay(Collision collision)
     {
-        if(collision.gameObject.name != "Citizen (Clone)")
+        if(collision.gameObject.layer != 7)
         {
             touching = true;
             landed = true;

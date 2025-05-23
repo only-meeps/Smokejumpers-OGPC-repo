@@ -19,6 +19,7 @@ TagManager:
   - helipad
   - PauseMenu
   - FireFighterDropOffPoint
+  - Fire Fighter
   layers:
   - Default
   - TransparentFX
@@ -27,8 +28,8 @@ TagManager:
   - Water
   - UI
   - ExcludeFromNavmesh
-  - 
-  - 
+  - Citizen
+  - PostProcessing
   - 
   - 
   - 

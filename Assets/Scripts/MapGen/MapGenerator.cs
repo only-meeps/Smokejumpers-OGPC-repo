@@ -15,65 +15,91 @@ using JetBrains.Annotations;
 
 public class MapGenerator : MonoBehaviour
 {
-    public GameObject treePrefab;
     public System.Random rnd = new System.Random();
+    [Header("Map size")]
     public int mapSize;
     public int chunkSize;
-    public List<GameObject> trees = new List<GameObject>();
-    public List<GameObject> burningTrees = new List<GameObject>();
-    public List<GameObject> burntTrees = new List<GameObject>();
-    public List<GameObject> fires = new List<GameObject>();
-    public List<Town> towns = new List<Town>();
-    public List<GameObject> buildingPrefabs = new List<GameObject>();
-    public List<Rect> fireAreas = new List<Rect>();
-    public GameObject[,] chunks;
-    public GameObject firePrefab;
-    public GameObject citizenPrefab;
-    public GameObject heliPadPrefab;
-    public GameObject helicopterPrefab;
-    public UIController UIController;
-    public Sprite townIcon;
-    public Sprite helipadIcon;
-    public Material townPickupZoneMat;
+    [Header("Noise Generation")]
     public int noiseScale;
     public int octaves;
     public float persistance;
     public float lacunarity;
-    public MapDisplay display;
     public float meshHeightMultiplier;
     public AnimationCurve meshHeightCurve;
-    public Material terrainMat;
+    public int seed;
+
+    [Header("Prefabs")]
+    public GameObject treePrefab;
+    public GameObject firePrefab;
+    public GameObject citizenPrefab;
+    public GameObject heliPadPrefab;
+    public GameObject helicopterPrefab;
+    public List<GameObject> buildingPrefabs = new List<GameObject>();
+    public GameObject fireFighterPrefab;
+
+    [Header("Compass Markers")]
+    public Sprite townIcon;
+    public Sprite helipadIcon;
+    public Sprite fireFighterDropOffPointMarker;
+
+    [HideInInspector] public List<GameObject> trees = new List<GameObject>();
+    [HideInInspector] public List<GameObject> burningTrees = new List<GameObject>();
+    [HideInInspector] public List<GameObject> burntTrees = new List<GameObject>();
+    [HideInInspector] public List<GameObject> fires = new List<GameObject>();
+    [HideInInspector] public List<Town> towns = new List<Town>();
+    [HideInInspector] public List<Rect> fireAreas = new List<Rect>();
+    [HideInInspector] public GameObject[,] chunks;
+    [HideInInspector] public List<Helipad> helipads = new List<Helipad>();
+
+    [Header("Scripts")]
+    public UIController UIController;
+    public MapDisplay display;
+    public Material townPickupZoneMat;
     public TextureData textureData;
-    public Vector2 townPosEditor;
-    public Vector2 townPos;
-    public GameObject player;
+    public NavMeshSurface navSurface;
+
+    [Header("Materials")]
+    public Material terrainMat;
+    public Material fireFighterDropOffPointMat;
+    public Material waterMat;
+    [HideInInspector] public GameObject player;
+    [Header("Draw Distance")]
     public float drawDistance;
     public float chunkDrawDistance;
-    public NavMeshSurface navSurface;
-    public List<Helipad> helipads = new List<Helipad>();
-    public List<Mission> possibleMissions = new List<Mission>();
-    public List<Mission> missionsOnMap = new List<Mission>();
-    public List<Mission> assaignedMissions = new List<Mission>();
-    public GameObject water;
+
+
+    [HideInInspector] public List<Mission> possibleMissions = new List<Mission>();
+    [HideInInspector] public List<Mission> missionsOnMap = new List<Mission>();
+    [HideInInspector] public List<Mission> assaignedMissions = new List<Mission>();
+    [Header("Water")]
     public float waterHeight;
     public float waterNoiseHeight;
+
+
+    [Header("Missions")]
     public GameObject missionPrefab;
     public GameObject missionVerticalLayoutGroup;
-    public Rect playableMapSize;
+
+    [HideInInspector] public Rect playableMapSize;
+
+    [Header("Stats")]
     public int missionsCompleted;
     public int citizensKilled;
     public int citizensDied;
     public int timesRespawned;
     private bool startedScore;
-    public bool titleScreen;
+    [HideInInspector] public bool titleScreen;
+
+    [Header("TitleScreen")]
     public GameObject titleScreenUIObj;
     public GameObject gameUIObj;
-    public GameObject fireFighterPrefab;
-    public Material fireFighterDropOffPointMat;
-    public Sprite fireFighterDropOffPointMarker;
-    public List<Rect> fireFighterDropOffPoints = new List<Rect>();
-    public List<float> fireFighterDropOffPointsHeight = new List<float>();
-    public int seed;
+
+
+
+    [HideInInspector] public List<Rect> fireFighterDropOffPoints = new List<Rect>();
+    [HideInInspector] public List<float> fireFighterDropOffPointsHeight = new List<float>();
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Awake()
     {
@@ -119,13 +145,30 @@ public class MapGenerator : MonoBehaviour
         {
             meshHeightCurve.AddKey(UnityEngine.Random.Range(0, 0.90f), UnityEngine.Random.Range(0, 1));
         }
-        
-        playableMapSize = new Rect(new Vector2(0,0), new Vector2((mapSize) * chunkSize, -(mapSize) * chunkSize));
-        DrawRect(playableMapSize, 0, townPickupZoneMat, 1, "mapSize", null);
         waterNoiseHeight = UnityEngine.Random.Range(-.2f, .1f);
         waterHeight = waterNoiseHeight * meshHeightMultiplier;
-        water.transform.position = new Vector3(0, waterHeight, 0);
-        water.transform.localScale = new Vector3(mapSize * chunkSize, 1, mapSize * chunkSize);
+        playableMapSize = new Rect(new Vector2(0,0), new Vector2((mapSize) * chunkSize, -(mapSize) * chunkSize));
+        DrawRect(playableMapSize, 0, townPickupZoneMat, 1, "mapSize", null);
+        Debug.Log(playableMapSize.width / 100 + " " + playableMapSize.height / 100);
+        for(int y = 0; y < Mathf.Abs(Mathf.RoundToInt(playableMapSize.height / 100)); y++)
+        {
+            for(int x = 0; x < Mathf.Abs(Mathf.RoundToInt(playableMapSize.width / 100)); x++)
+            {
+                Debug.Log("Water spawned");
+                GameObject waterObj = new GameObject();
+                waterObj.name = "Water " + x + " " + y;
+                waterObj.AddComponent<MeshFilter>();
+                waterObj.AddComponent<MeshRenderer>();
+                waterObj.AddComponent<water>();
+                waterObj.transform.position = new Vector3(x*100, waterHeight, -y*100);
+                waterObj.GetComponent<water>().waterMat = waterMat;
+                waterObj.GetComponent<water>().GenerateWater(new Vector2(100, 100));
+            }
+        }
+
+
+
+        //water.transform.localScale = new Vector3(mapSize * chunkSize, 1, mapSize * chunkSize);
         //Create chunk gameobjects and gameobject component lists
         chunks = new GameObject[mapSize, mapSize];
         display.meshFilter = new MeshFilter[mapSize, mapSize];

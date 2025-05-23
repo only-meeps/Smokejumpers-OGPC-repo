@@ -60,9 +60,97 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8663550089728055151, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -8370178277093918218, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -8057736166172354182, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -6579440138766209057, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -6450165674524001105, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -6320591855412689392, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -5324675474634678617, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -5016080156979714287, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -2821761757288588400, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -1782523684720051626, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -1480142118519610314, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
       propertyPath: m_Name
       value: Firefighter
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771925600353120335, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1790183945725220954, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4386424612980899835, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551145550768109563, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6905609870639353253, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6953069495036019521, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7036213049465896255, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7045818272461898182, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8767312209109592585, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 9165063325418115513, guid: 55ecacadd392c7d4e893b7b31e8bf867, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -114,6 +202,8 @@ MonoBehaviour:
   finalPos: {x: 0, y: 0, z: 0}
   rb: {fileID: 6029871194956663887}
   animator: {fileID: 4215156053470398547}
+  onTriggerObj: {fileID: 0}
+  helipadIndex: 0
 --- !u!195 &7497561426297519337
 NavMeshAgent:
   m_ObjectHideFlags: 0

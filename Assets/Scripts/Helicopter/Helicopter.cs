@@ -11,8 +11,9 @@ using UnityEngine.AI;
 
 public class Helicopter : MonoBehaviour
 {
+    [Header("Inputs")]
     public InputActionAsset inputActions;
-    public Vector3 spawnPoint;
+    [HideInInspector] public Vector3 spawnPoint;
     public HelicopterMovement inputs;
     private InputAction tiltF;
     private InputAction tiltB;
@@ -25,65 +26,79 @@ public class Helicopter : MonoBehaviour
     private InputAction engineToggle;
     private InputAction restart;
     private InputAction pause;
-    public InputAction ejectPassengers;
+    private InputAction ejectPassengers;
+    [Header("Components")]
     public Rigidbody rb;
+    public GameObject physicsHeli;
+    public CinemachineCamera cinemachineCam;
+    public BoxCollider boxCollider;
+    public HeliCollider heliCollider;
+    public AudioSource heliAudioSource;
+    public AudioSource roterSoundSource;
+    [Header("Movement")]
     public float tiltLimiter;
     public float tiltSpeed;
     public float moveSpeedMultiplier;
     public float rotationSpeedMultiplier;
     public float upDownMultiplier;
-    public GameObject physicsHeli;
-    public CinemachineCamera cinemachineCam;
+    public float maxHeight = 90;
+    [Header("Prefabs")]
+    public GameObject cameraPrefab;
+    public GameObject citizenPrefab;
+    public GameObject fireFighterPrefab;
+    public GameObject explosionPrefab;
+    public GameObject fracturedHeliPrefab;
+
     private float xAngle;
     private float zAngle;
-    public bool engineOn;
-    public bool touching;
-    private Quaternion startingRot;
-    public GameObject cameraPrefab;
-    public float cameraMoveSpeed;
-    public BoxCollider boxCollider;
-    public float raycastInterval;
-    public float altitudeTarget;
-    public float thrust;
-    public HeliCollider heliCollider;
+    [HideInInspector] public bool engineOn;
+    [HideInInspector] public bool touching;
+    [HideInInspector] private Quaternion startingRot;
+
+
+    [Header("Stats")]
     public int citizensRescued;
     public int citizensKilled;
     public int citizensDiedInFire;
     public int citizensLeft;
+
     public List<GameObject> entrances = new List<GameObject>();
+    [Header("Capacity")]
     public int capacity;
     public int fireFighters;
     public int citizens;
     public int maxCapacity;
-    public GameObject citizenPrefab;
-    public GameObject fireFighterPrefab;
+    [Header("Fuel")]
     public float fuel;
     public float fuelEfficency;
-    public GameObject explosionPrefab;
+    public AnimationCurve fuelCurve;
     bool crashed;
-    public GameObject fracturedHeliPrefab;
+
+    [Header("Sound Clips")]
     public AudioClip crashSound;
-    public AudioSource heliAudioSource;
+
     float initialFuel;
-    public MapGenerator mapGenerator;
-    private int helicopterRespawnLimiter;
+    [HideInInspector] public MapGenerator mapGenerator;
     public AudioClip fuelWarningSound;
     public AudioClip roterSounds;
-    public AudioSource roterSoundSource;
+
     public Animator heliAnimator;
     bool titleScreen;
+    [Header("Camera")]
     public Vector3 titleScreenFollowOffset = new Vector3(4,4,5 ); 
     public Vector3 gameFollowOffset = new Vector3(0,30,0.6f);
     public Vector3 titleScreenFollowRot = new Vector3(25,-158,0);
     public Vector3 gameFollowRot = new Vector3(90,0,0);
-    public GameObject pauseUI;
-    public List<GameObject> fracturedHeliObjs;
-    public AnimationCurve fuelCurve;
-    public float maxHeight = 90;
+    [HideInInspector] public GameObject pauseUI;
+    [HideInInspector] public List<GameObject> fracturedHeliObjs;
+
+
+    bool respawnedThisFrame;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        respawnedThisFrame = false;
         heliAnimator.speed = 1;
         initialFuel = fuel;
         crashed = false;
@@ -194,7 +209,6 @@ public class Helicopter : MonoBehaviour
         {
             Crash();
         }
-        helicopterRespawnLimiter++;
         touching = heliCollider.touching;
         //Debug.Log("tiltF : " + tiltF.IsPressed() + " tiltB : " + tiltB.IsPressed() + " tiltR : " + tiltR.IsPressed() + " tiltL : " + tiltL.IsPressed() + " Helicollider.touching : " + touching);
         if ((tiltF.IsPressed() || tiltB.IsPressed() || tiltR.IsPressed() || tiltL.IsPressed() || rotateL.IsPressed() || rotateR.IsPressed()) && crashed == false && heliCollider.crashed == true && heliCollider.landed == false)
@@ -364,23 +378,27 @@ public class Helicopter : MonoBehaviour
                 //Debug.Log("up");
                 rb.transform.position = (new Vector3(rb.position.x, rb.position.y + upDownMultiplier * Time.deltaTime, rb.position.z));
             }
+            if (!respawnedThisFrame)
+            {
+                if (xAngle > 0)
+                {
+                    rb.MovePosition(rb.position + (rb.transform.forward * xAngle * moveSpeedMultiplier * Time.deltaTime));
+                }
+                if (xAngle < 0)
+                {
+                    rb.MovePosition(rb.position + (rb.transform.forward * xAngle * moveSpeedMultiplier * Time.deltaTime));
+                }
+                if (zAngle > 0)
+                {
+                    rb.MovePosition(rb.position + (-rb.transform.right * zAngle * moveSpeedMultiplier * Time.deltaTime));
+                }
+                if (zAngle < 0)
+                {
+                    rb.MovePosition(rb.position + (-rb.transform.right * zAngle * moveSpeedMultiplier * Time.deltaTime));
+                }
 
-            if (xAngle > 0)
-            {
-                physicsHeli.transform.Translate(Vector3.forward * xAngle * moveSpeedMultiplier * Time.deltaTime);
             }
-            if (xAngle < 0)
-            {
-                physicsHeli.transform.Translate(Vector3.forward * xAngle * moveSpeedMultiplier * Time.deltaTime);
-            }
-            if (zAngle > 0)
-            {
-                physicsHeli.transform.Translate(Vector3.left * zAngle * moveSpeedMultiplier * Time.deltaTime);
-            }
-            if (zAngle < 0)
-            {
-                physicsHeli.transform.Translate(Vector3.left * zAngle * moveSpeedMultiplier * Time.deltaTime);
-            }
+
             
             transform.rotation = new Quaternion(transform.rotation.x, physicsHeli.transform.rotation.y, transform.rotation.z, transform.rotation.w);
             if(!tiltF.IsPressed() && !tiltB.IsPressed() && !tiltL.IsPressed() && !tiltR.IsPressed() && !touching)
@@ -455,12 +473,6 @@ public class Helicopter : MonoBehaviour
             //rb.rotation = new Quaternion(0, rb.rotation.y, 0, rb.rotation.w);
             rb.useGravity = false;
         }
-        if (restart.IsPressed() && helicopterRespawnLimiter > 100)  
-        {
-
-            Debug.Log("Respawn");
-            Respawn();
-        }
         if(fuel < (initialFuel / 4) && crashed == false && heliAudioSource.isPlaying == false)
         {
             heliAudioSource.clip = fuelWarningSound;
@@ -475,6 +487,11 @@ public class Helicopter : MonoBehaviour
     }
     public void Update()
     {
+        if (restart.WasPressedThisFrame())
+        {
+            respawnedThisFrame = true;
+            Respawn();
+        }
         if (pause.WasPressedThisFrame())
         {
             if (Time.timeScale == 0)
@@ -493,12 +510,13 @@ public class Helicopter : MonoBehaviour
             Destroy(fracturedHeliObjs[0]);
             fracturedHeliObjs.RemoveAt(0);
         }
+        
     }
     public void Respawn()
     {
         heliAnimator.speed = 1;
         roterSoundSource.clip = roterSounds;
-        roterSoundSource.loop = true;
+
         roterSoundSource.Play();
         rb.angularVelocity = Vector3.zero;
         rb.linearVelocity = Vector3.zero;
@@ -506,16 +524,21 @@ public class Helicopter : MonoBehaviour
         {
             gameObject.GetComponentsInChildren<MeshRenderer>()[i].enabled = true;
         }
+        respawnedThisFrame = false;
         crashed = false;
         mapGenerator.timesRespawned++;
         capacity = 0;
         citizens = 0;
         fireFighters = 0;
         fuel = initialFuel;
-        transform.position = spawnPoint;
-        rb.transform.position = spawnPoint;
-        rb.transform.rotation = new Quaternion();
-        transform.rotation = new Quaternion();
+        while((rb.transform.position != spawnPoint))
+        {
+            transform.position = spawnPoint;
+            transform.rotation = startingRot;
+            rb.transform.position = spawnPoint;
+            rb.transform.rotation = startingRot;
+        }
+        roterSoundSource.loop = false;
     }
 
     void Crash()

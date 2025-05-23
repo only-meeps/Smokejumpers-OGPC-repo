@@ -139,6 +139,10 @@ public class FireFighter : MonoBehaviour
     }
     private void OnTriggerExit(Collider other)
     {
+        if(other.gameObject == onTriggerObj)
+        {
+            onTriggerObj = null;
+        }
         if (other.tag == "Door")
         {
             touchingDoor = false;
