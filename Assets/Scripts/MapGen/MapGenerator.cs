@@ -94,6 +94,11 @@ public class MapGenerator : MonoBehaviour
     public GameObject titleScreenUIObj;
     public GameObject gameUIObj;
 
+    [Header("Weather - !Warning! - Don't Edit")]
+    public float windSpeed;
+    public Vector2 windDirection;
+    public float ambientWindSpeed;
+
 
 
     [HideInInspector] public List<Rect> fireFighterDropOffPoints = new List<Rect>();
@@ -150,22 +155,8 @@ public class MapGenerator : MonoBehaviour
         playableMapSize = new Rect(new Vector2(0,0), new Vector2((mapSize) * chunkSize, -(mapSize) * chunkSize));
         DrawRect(playableMapSize, 0, townPickupZoneMat, 1, "mapSize", null);
         Debug.Log(playableMapSize.width / 100 + " " + playableMapSize.height / 100);
-        for(int y = 0; y < Mathf.Abs(Mathf.RoundToInt(playableMapSize.height / 100)); y++)
-        {
-            for(int x = 0; x < Mathf.Abs(Mathf.RoundToInt(playableMapSize.width / 100)); x++)
-            {
-                Debug.Log("Water spawned");
-                GameObject waterObj = new GameObject();
-                waterObj.name = "Water " + x + " " + y;
-                waterObj.AddComponent<MeshFilter>();
-                waterObj.AddComponent<MeshRenderer>();
-                waterObj.AddComponent<water>();
-                waterObj.transform.position = new Vector3(x*100, waterHeight, -y*100);
-                waterObj.GetComponent<water>().waterMat = waterMat;
-                waterObj.GetComponent<water>().GenerateWater(new Vector2(100, 100));
-            }
-        }
 
+        
 
 
         //water.transform.localScale = new Vector3(mapSize * chunkSize, 1, mapSize * chunkSize);
@@ -451,7 +442,39 @@ public class MapGenerator : MonoBehaviour
                 
             }
         }
+        
+        Texture2D terrainHeightMapTexture = new Texture2D(globalNoiseMap.GetLength(0), globalNoiseMap.GetLength(1));
+        for (int tY = 0; tY < terrainHeightMapTexture.height; tY++)
+        {
+            for (int tX = 0; tX < terrainHeightMapTexture.width; tX++)
+            {
+                float globalNoiseMapHeight = globalNoiseMap[tX, tY];
+                terrainHeightMapTexture.SetPixel(tX, tY, new Color(globalNoiseMapHeight, globalNoiseMapHeight, globalNoiseMapHeight));
+            }
+        }
+        for (int y = 0; y < Mathf.Abs(Mathf.RoundToInt(playableMapSize.height / 100)); y++)
+        {
+            for (int x = 0; x < Mathf.Abs(Mathf.RoundToInt(playableMapSize.width / 100)); x++)
+            {
 
+                GameObject waterObj = new GameObject();
+                waterObj.name = "Water " + x + " " + y;
+                waterObj.AddComponent<MeshFilter>();
+                waterObj.AddComponent<MeshRenderer>();
+                waterObj.AddComponent<water>();
+                waterObj.transform.position = new Vector3(x * 100, waterHeight, -y * 100);
+                waterObj.GetComponent<water>().waterMat = waterMat;
+                waterObj.GetComponent<water>().GenerateWater(new Vector2(100, 100));
+                
+                waterObj.GetComponent<MeshRenderer>().sharedMaterial.SetTexture("TerrainHeightMap", terrainHeightMapTexture);
+                waterObj.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("MeshHeightMultiplier", meshHeightMultiplier);
+                waterObj.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("WaveAmplitude", windSpeed);
+                waterObj.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("NoiseInfluence", ambientWindSpeed);
+                waterObj.GetComponent<MeshRenderer>().sharedMaterial.SetVector("WaveDirection", windDirection);
+            }
+        }
+
+        
         for(int i = 0; i < fireFighterDropOffPointMissions; i++)
         {
             DrawRect(fireFighterDropOffPoints[i], fireFighterDropOffPointsHeight[i], fireFighterDropOffPointMat, .1f, "fire fighter dropoff point " + i.ToString(), "FireFighterDropOffPoint");
